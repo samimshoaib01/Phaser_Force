@@ -14,6 +14,12 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('tilemapTiles', 'assets/tilesets/tilemap.png');
         this.load.image('tilesetFinal', 'assets/tilesets/tileset_16x16_final_1.png');
 
+        this.load.image('soda', 'assets/tilesets/soda-pop-machine.png');
+        this.load.image('vending', 'assets/tilesets/vending-machine.png');
+        this.load.image('water_fountain', 'assets/tilesets/water-fountain.png');
+        this.load.image('flower1', 'assets/tilesets/flowerpot-1.png');
+        this.load.image('flower3', 'assets/tilesets/flowerpot-3.png');
+
         // Load the player image
         this.load.image('player', 'assets/sprites/player.png');
     }
@@ -28,6 +34,12 @@ export default class Level1 extends Phaser.Scene {
         const terrainTiles = map.addTilesetImage('terrain', 'terrainTiles');
         const tilemapTiles = map.addTilesetImage('tilemap', 'tilemapTiles');
         const tilesetFinal = map.addTilesetImage('tileset_16x16_final_1', 'tilesetFinal');
+
+        const soda= map.addTilesetImage("soda-pop-machine","soda");
+        const vending = map.addTilesetImage("vending-machine","vending");
+        const water_fountain= map.addTilesetImage("water-fountain","water_fountain");
+        const flower1=map.addTilesetImage("flowerpot-1","flower1");
+        const flower3=map.addTilesetImage("flowerpot-3","flower3");
 
         // Create layers using the appropriate tilesets
         const groundLayer = map.createLayer('Ground', [forestTiles, roguelikeCityTiles, terrainTiles, tilemapTiles, tilesetFinal], 0, 0);
