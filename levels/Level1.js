@@ -59,10 +59,10 @@ export default class Level1 extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
         // Optional: Set zoom level to show more of the map (adjust the zoom level as needed)
-        this.cameras.main.setZoom(1); // Change this as needed
+        this.cameras.main.setZoom(4); // Change this as needed
 
         // Optional: Add a deadzone to give smoother movement within the camera’s view
-        this.cameras.main.setDeadzone(100, 100);
+        this.cameras.main.setDeadzone(5,5);
 
         // Define input for player movement
         this.cursors = this.input.keyboard.createCursorKeys();

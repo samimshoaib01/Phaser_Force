@@ -15,7 +15,12 @@ const config = {
             gravity: { y: 0 },
             debug: false,
         },
-    },
+    }, scale: {
+        mode: Phaser.Scale.FIT, // Ensures the game scales to fit the screen
+        autoCenter: Phaser.Scale.CENTER_BOTH, // Centers the game on the screen
+        width: window.innerWidth,   
+        height: window.innerHeight,
+    }
 };
 
 const game = new Phaser.Game(config);
