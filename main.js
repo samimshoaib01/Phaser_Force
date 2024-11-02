@@ -3,23 +3,22 @@ import scenes from './config/scenes.js';
 const config = {
     type: Phaser.AUTO,
     scale: {
-        mode: Phaser.Scale.FIT,  // Makes the game canvas fit within the window
-        autoCenter: Phaser.Scale.CENTER_BOTH,  // Centers the canvas horizontally and vertically
-        width: 800,   // Default width, but it will resize
-        height: 600,  // Default height, but it will resize
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: window.innerWidth,
+        height: window.innerHeight,
     },
-    scene: scenes,  // Load scenes from the config file
+    scene: scenes,
     physics: {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
             debug: false,
         },
-    }, scale: {
-        mode: Phaser.Scale.FIT, // Ensures the game scales to fit the screen
-        autoCenter: Phaser.Scale.CENTER_BOTH, // Centers the game on the screen
-        width: window.innerWidth,   
-        height: window.innerHeight,
+    },
+    render: {
+        antialias: false, // Disable anti-aliasing
+        pixelArt: true    // Enable pixel art mode
     }
 };
 
