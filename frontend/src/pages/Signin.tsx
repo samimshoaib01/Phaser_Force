@@ -1,27 +1,68 @@
 import { useState } from "react";
-import axios from "axios"; // Make sure to import axios
 import SignInButton from "../SignInButton";
+import { useNavigate } from "react-router-dom";
+import { VerifyOtp } from "./VerifyOtp";
+import axios, { AxiosError } from "axios";
+import { jwtDecode } from "jwt-decode";
+import { useRecoilState,  } from "recoil";
+import { validUser } from "../components/recoil";
 
+
+interface SignupResponse {
+  token: string; 
+}
+
+interface DecodedToken{
+  name:string,
+  email:string,
+  userId:string,
+  Level:string
+}
 export const Signin = () => {
 
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const navigate=useNavigate();
+  const [verify,setVerify]=useState<boolean>(false);
+  const [isValid ,setisValid]=useRecoilState(validUser);  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:3000/auth/local", {
+      
+      const res = await axios.post<SignupResponse>("http://localhost:3000/auth/local", {
         email,
         password,
       });
-      console.log("Response:",res.data);
-    } catch (error) {
-console.log(error);
+
+      const token=res.data.token;
+      console.log(token);
+      localStorage.setItem("token",token);
+      const decode=jwtDecode<DecodedToken>(token);
+     const userName=decode.name;
+      console.log(decode); 
+      setisValid(true);
+      navigate(`/play?verified=${encodeURIComponent(isValid)}&userName=${encodeURIComponent(userName)}`);
+    } catch (error:Error | AxiosError) {
+        
+        if (error.response) {
+          if(error.response.status==409){
+            setVerify(true);
+          }
+          if(error.response.status==400){
+            navigate("/signup");
+          }
+        }
+
       }
   };
 
+
   return (
+    verify ? (
+      <VerifyOtp email={email} />
+    ) :(
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md border border-gray-300 rounded-lg shadow-lg bg-white p-10">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Sign In</h2>
@@ -65,6 +106,6 @@ console.log(error);
           <SignInButton />
         </div>
       </div>
-    </div>
+    </div>)
   );
 };

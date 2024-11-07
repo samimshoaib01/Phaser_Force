@@ -11,11 +11,16 @@
   },
   "dependencies": {
     "@types/axios": "^0.9.36",
+    "@types/recoil": "^0.0.1",
+    "@types/socket.io-client": "^1.4.36",
     "axios": "^1.7.7",
+    "jwt-decode": "^4.0.0",
     "phaser": "^3.86.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.27.0"
+    "react-router-dom": "^6.27.0",
+    "recoil": "^0.7.7",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

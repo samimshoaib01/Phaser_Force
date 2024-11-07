@@ -1,27 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { scenes } from './config/scenes';
-
-interface User{
-  fullname:string,
-  _id:string
-}
+import { useNavigate } from 'react-router-dom';
 
 const PhaserGame: React.FC = () => {
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-  const [user,setUser]=useState<User|null>(null);
-  useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const userId = queryParams.get('userId');
-    const userName = queryParams.get('userName');
-
-    console.log('User ID:', userId);
-    console.log('User Name:', userName);
-
-    setUser({ fullname: userName||"" , _id: userId||"" });
-
-  }, []);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Only initialize the game once when the component mounts
@@ -34,7 +19,7 @@ const PhaserGame: React.FC = () => {
           width: window.innerWidth,
           height: window.innerHeight,
         },
-        scene: scenes ,
+        scene: scenes,
         physics: {
           default: 'arcade',
           arcade: {
@@ -44,12 +29,34 @@ const PhaserGame: React.FC = () => {
         },
         render: {
           antialias: false, // Disable anti-aliasing
-          pixelArt: true    // Enable pixel art mode
+          pixelArt: true,   // Enable pixel art mode
         },
         parent: gameContainerRef.current, // Attach Phaser game to the div
       };
 
       gameRef.current = new Phaser.Game(config);
+
+      // Load saved progress from localStorage
+      const savedProgress = localStorage.getItem('playerProgress');
+      if (savedProgress) {
+        try {
+          const progress = JSON.parse(savedProgress);
+          console.log('Phaser progress:', progress);
+              
+          const levelName = progress.Level; // put the  level that we want to render when resume
+          const sceneExists = scenes.some(
+            (scene: any) => scene.name === levelName
+          );
+
+          if (sceneExists && gameRef.current) {
+            gameRef.current.scene.start(levelName);
+          } else {
+            console.warn('Invalid level name or scene not found.');
+          }
+        } catch (error) {
+          console.error('Error parsing player progress:', error);
+        }
+      }
     }
 
     // Cleanup function to destroy the game instance when the component unmounts
