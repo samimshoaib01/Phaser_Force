@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum LevelName {
+  Level1
+  Level2
+  Level3
+  Level4
+  Level5
+}
+
+model User {
+  id               Int     @id @default(autoincrement())
+  name             String
+  googleID         String  @default("")
+  email            String  @unique
+  password         String  @default("")
+  photo            String?
+  verificationCode Int     @default(-1)
+  verified         Boolean @default(false)
+  Level            String  @default("Level1")
+  x                Int     @default(800)
+  y                Int     @default(1550)
+  createdAt        DateTime @default(now())
+  isCompleted      Boolean @default(false)
+  CPI              Float   @default(0) 
+  levels           Level[] // Relation to Level
+
+}
+
+model Level {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  levelName LevelName 
+  SPI       Float     @default(0)
+  isComp    Boolean   @default(false)
+  x         Int       @default(800)
+  y         Int       @default(1550)
+  createdAt DateTime  @default(now())
+  bestSPI  Float @default(7.5)
+  @@unique([userId, levelName]) // Each user should only have one entry per level
+}
