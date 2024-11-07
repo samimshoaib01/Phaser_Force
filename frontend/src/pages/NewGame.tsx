@@ -9,7 +9,6 @@ export const NewGame=()=> {
     const navigate=useNavigate();
 
     useEffect(()=>{
-      console.log("cehck status: ",isvalid);
       if(!isvalid){
         navigate("/signup");
       }

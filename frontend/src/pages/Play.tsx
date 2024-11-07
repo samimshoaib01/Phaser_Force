@@ -1,36 +1,57 @@
-import { useEffect } from "react"
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { validUser } from "../components/recoil";
 
-export const Play=()=> {
-    const [isValid , setIsValid]=useRecoilState(validUser)
-    const navigate=useNavigate(); 
-    useEffect(() => {
-    
-      if (!isValid)
-        navigate("/signup");
+export const Play = () => {
+  const [isValid, setIsValid] = useRecoilState(validUser);
+  const navigate = useNavigate();
 
-        const queryParams = new URLSearchParams(window.location.search);
-         const token= queryParams.get('verified');
-        console.log("TOKEN!! : ",token);
-         if(token){
-          localStorage.setItem("token",token);
-          setIsValid(true);
-         }
-         else{
-          navigate("/signup")
-         }
-    
-      }, []);
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const token = queryParams.get('verified');
+    console.log("TOKEN!! : ", token);
+    if (token) {
+      localStorage.setItem("token", token);
+      setIsValid(true);
+    } else {
+      navigate("/signup");
+    }
+  }, []);
 
   return (
-    <div>
-       <Link to='/newgame' className="bg-red-200">New Game</Link>{/* to play new game move to Level 1 default coordinate  */}
-       <Link to='/resume' className="bg-blue-200 m-10" >Resume</Link>  {/* when resumed move to the  Level and coordinate stored in database */}
-       <button className="bg-slate-200 m-10" >LeaderBoard</button>  {/* show top 10 players who have completed the game and the time taken by them to comp the game */}
-       {/* when player closes the game update the database with the latest coordinates and level ->(how to get the latest level store the current level in localstorage as the user proceed ) */}
-    </div>
-  )
-}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 p-6">
+      <div className="flex flex-col items-center space-y-6 p-8 bg-gray-800 bg-opacity-90 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700">
+        <h1 className="text-3xl font-bold text-yellow-400 tracking-wider mb-6">Adventure Awaits</h1>
+        
+        <Link 
+          to='/newgame' 
+          className="w-48 py-3 text-center bg-yellow-600 text-white font-semibold rounded-md shadow-lg hover:bg-yellow-500 transform hover:scale-105 transition-all duration-200"
+        >
+          Start New Adventure
+        </Link>
 
+        <Link 
+          to='/resume' 
+          className="w-48 py-3 text-center bg-green-700 text-white font-semibold rounded-md shadow-lg hover:bg-green-600 transform hover:scale-105 transition-all duration-200"
+        >
+          Resume Journey
+        </Link>
+
+        <Link 
+          to='/leaderboard' 
+          className="w-48 py-3 text-center bg-blue-700 text-white font-semibold rounded-md shadow-lg hover:bg-blue-600 transform hover:scale-105 transition-all duration-200"
+        >
+          Hall of Fame
+        </Link>
+
+        <Link 
+          to='/complevel' 
+          className="w-48 py-3 text-center bg-purple-700 text-white font-semibold rounded-md shadow-lg hover:bg-purple-600 transform hover:scale-105 transition-all duration-200"
+        >
+          Completed Levels
+        </Link>
+      </div>
+    </div>
+  );
+};

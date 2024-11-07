@@ -8,11 +8,14 @@ import bcrypt from "bcrypt";
 import nodemailer from 'nodemailer';
 import * as dotenv from 'dotenv';
 import jwt from "jsonwebtoken";
-
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient(); // Create a Prisma Client instance
+
+
 
 app.use(express.json());
 
@@ -20,6 +23,26 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
+
+
+const httpserver=createServer(app);
+
+const io=new Server(httpserver,{
+    cors:{
+        origin:"http://localhost:5173",
+        credentials:true,
+        methods:["GET","POST"]
+    }
+});
+
+
+io.on('connection',(socket)=>{
+    console.log("SOcket connected with userId: ",socket.id);
+
+    socket.on("level-comp",(data)=>{
+        console.log("FROM SOCKET : ",data);
+    })
+})
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your_session_secret',
@@ -99,7 +122,7 @@ interface CustomRequest extends Request {
 }
 
 
- function checkUser(req: CustomRequest, res: Response, next: NextFunction){
+ const checkUser=(req: CustomRequest, res: Response, next: NextFunction)=>{
     try{
        
     const token=req.headers.authorization || "";
@@ -302,9 +325,85 @@ app.post("/auth/local", async (req, res) => {
         } catch (error) {
                 res.status(409).send("Error while making new game");
         }
-    })
+    });
+
+
+app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
+    try {
+        const userId=req.userId?.id;    
+
+        const user=await prisma.user.findFirst({
+            where:{
+                id:Number(userId)
+            },
+            select:{
+                Level:true,
+                x:true,
+                y:true
+            }
+        })
+        console.log("UUUUUU: ",user);
+        res.send(user);
+        return ;
+
+    }
+    catch(e){
+        res.status(411).send("Error while fetching the current level");
+        return ;
+    }
+});
+
+app.get("/leaderboard",async(req,res)=>{
+    try {
+            const winners=await prisma.user.findMany({
+                where:{
+                    isCompleted:true,                    
+                }
+                , select:{
+                    CPI:true,
+                    name:true,
+                },
+                orderBy:{
+                    CPI:'desc' // to get the highest cpi at the top
+                }
+            })
+            console.log(winners);
+            res.send(winners);
+            return ;
+    } catch (error) {
+             res.status(400).send("Error while fetching winners");
+             return ;
+    }
+});
+
+app.get("/complevel",checkUser,async(req:CustomRequest,res:Response)=>{
+    try{
+
+        const userId=req.userId?.id;
+        const level=await prisma.level.findMany({
+            where:{
+                userId
+            },
+            select:{
+                levelName:true,
+                isComp:true,
+                bestSPI:true,
+                SPI:true,
+
+            }
+        })
+        console.log(level);
+        res.send(level);
+        return ;
+    }
+    catch(e){
+        res.status(400).send("Error while fetching the completed levels");
+        return;
+         
+    }
+})
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+httpserver.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

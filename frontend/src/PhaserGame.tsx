@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { scenes } from './config/scenes';
-import { useNavigate } from 'react-router-dom';
+import { Socket } from 'socket.io-client';
 
-const PhaserGame: React.FC = () => {
+interface PhaserGameProps {
+  socket: Socket | null;
+}
+
+export const PhaserGame: React.FC<PhaserGameProps> = ({ socket }) => {
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Only initialize the game once when the component mounts
@@ -36,14 +39,19 @@ const PhaserGame: React.FC = () => {
 
       gameRef.current = new Phaser.Game(config);
 
+      // Store the socket in the game registry
+      if (socket) {
+        gameRef.current.registry.set('socket', socket);
+      }
+
       // Load saved progress from localStorage
       const savedProgress = localStorage.getItem('playerProgress');
       if (savedProgress) {
         try {
           const progress = JSON.parse(savedProgress);
           console.log('Phaser progress:', progress);
-              
-          const levelName = progress.Level; // put the  level that we want to render when resume
+
+          const levelName = progress.Level; // put the level that we want to render when resume
           const sceneExists = scenes.some(
             (scene: any) => scene.name === levelName
           );
@@ -66,9 +74,7 @@ const PhaserGame: React.FC = () => {
         gameRef.current = null;
       }
     };
-  }, []);
+  }, [socket]); // Re-run the effect when `socket` changes
 
   return <div id="phaser-game" ref={gameContainerRef} />;
 };
-
-export default PhaserGame;
