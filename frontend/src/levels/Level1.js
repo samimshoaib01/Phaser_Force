@@ -28,6 +28,19 @@ export default class Level1 extends Phaser.Scene {
         
     }
 
+    init() {
+        // Retrieve the socket instance from game registry or data
+        const socket = this.game.registry.get('socket'); // or this.game.data.get('socket')
+        
+        if (socket) {
+          // Use the socket as needed, e.g., emit a message
+        //   socket.emit('level-start', { level: 'Level1' });
+          console.log('Socket connection in Level1:', socket.id);
+        } else {
+          console.warn('Socket not available in Level1');
+        }
+      }
+
     create() {
         
         this.createQuestionPanel(`With a name that flows like a gentle stream,
@@ -319,6 +332,11 @@ window.addEventListener('beforeunload', (event) => {
     if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
         console.log("Enter key pressed!");
         if (this.inCompletionZone) {
+            const data =  this.onLevelComplete();
+            const {time , penalty , CPI } =data;
+            console.log("data: ",data);
+            const socket = this.game.registry.get('socket');
+            socket.emit("level-comp",data);
             console.log("In completion zone, calling onLevelComplete.");
             this.onLevelComplete();
         } else {
@@ -330,11 +348,14 @@ window.addEventListener('beforeunload', (event) => {
     
 
     onLevelComplete() {
+        console.log("CURRENT : ",this.time.now );
+        console.log("START TIME : ", this.startTime)
         this.elapsedTime = (this.time.now - this.startTime) / 1000;
-        console.log(this.elapsedTime);
+        console.log("TIME : ",this.elapsedTime);
         console.log(this.penalties);
         const cpi = this.calculateCPI(this.elapsedTime, this.penalties);
         console.log(`Level completed! CPI: ${cpi.toFixed(2)}`);
+        return { time : this.elapsedTime, penalty : this.penalties,CPI: cpi.toFixed(2) }
         this.clearProgress();
     }
 
