@@ -2,9 +2,19 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { validUser } from "../components/recoil";
+import { jwtDecode } from "jwt-decode";
 
+
+
+interface DecodedToken{
+  name:string,
+  email:string,
+  userId:string,
+  Level:string
+} 
 export const Play = () => {
-  const [isValid, setIsValid] = useRecoilState(validUser);
+  
+  const [isValid, setisValid] = useRecoilState(validUser);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,7 +23,10 @@ export const Play = () => {
     console.log("TOKEN!! : ", token);
     if (token) {
       localStorage.setItem("token", token);
-      setIsValid(true);
+      const decode=jwtDecode<DecodedToken>(token);
+      const userName=decode.name;
+      const userId=decode.userId
+      setisValid({isValid:true,name:userName,userId:Number(userId)});
     } else {
       navigate("/signup");
     }

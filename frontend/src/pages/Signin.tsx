@@ -41,9 +41,9 @@ export const Signin = () => {
       localStorage.setItem("token",token);
       const decode=jwtDecode<DecodedToken>(token);
      const userName=decode.name;
-      console.log(decode); 
-      setisValid(true);
-      navigate(`/play?verified=${encodeURIComponent(isValid)}&userName=${encodeURIComponent(userName)}`);
+     const userId=decode.userId;
+      setisValid({isValid:true,name:userName,userId:Number(userId)});
+      navigate(`/play?verified=${encodeURIComponent(isValid.isValid)}&userName=${encodeURIComponent(userName)}`);
     } catch (error:Error | AxiosError) {
         
         if (error.response) {

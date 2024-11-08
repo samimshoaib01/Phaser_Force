@@ -37,10 +37,50 @@ const io=new Server(httpserver,{
 
 
 io.on('connection',(socket)=>{
-    console.log("SOcket connected with userId: ",socket.id);
 
-    socket.on("level-comp",(data)=>{
-        console.log("FROM SOCKET : ",data);
+    const userId=Number(socket.handshake.query.userId);
+    console.log("Socket connected with userId: ",socket.id);
+
+    
+    socket.on("save-progress",async (data)=>{
+        // on resume restore the old time and penalties
+        const {x,y,elapsedTime, penalties, Level}=data;
+      const updatedValue=  await prisma.user.update({
+            where:{
+                id:userId
+            },
+            data:{
+                Level,
+                x,
+                y,
+                onGoingTime:elapsedTime,
+                penalities:penalties,
+                levels:{
+                    upsert:{
+                        where:{
+                            userId_levelName:{
+                                userId,
+                                levelName:Level
+                            }
+                        },update:{
+                            x,
+                            y,
+                            onGoingTime:elapsedTime,
+                            penalities:penalties,
+                        },
+                        create:{
+
+                            levelName: Level,
+                            x,
+                            y,
+                            onGoingTime:elapsedTime,
+                            penalities:penalties,
+                        }
+                    }
+                }
+            }
+        })
+        console.log(updatedValue);
     })
 })
 
@@ -296,6 +336,8 @@ app.post("/auth/local", async (req, res) => {
                     isCompleted:false,
                     x:800,
                     y:1550,
+                    penalities:0,
+                    onGoingTime:0,
                     Level:"Level1",
                     levels:{
                         updateMany:{
@@ -303,7 +345,9 @@ app.post("/auth/local", async (req, res) => {
                                 userId:Number(userId)
                             },
                             data:{
-                                SPI:0
+                                SPI:0,
+                                penalities:0,
+                                onGoingTime:0,
                             }
                         }
                     }
@@ -339,9 +383,11 @@ app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
             select:{
                 Level:true,
                 x:true,
-                y:true
+                y:true,
+                onGoingTime:true,
+                penalities:true
             }
-        })
+        });
         console.log("UUUUUU: ",user);
         res.send(user);
         return ;
@@ -402,6 +448,266 @@ app.get("/complevel",checkUser,async(req:CustomRequest,res:Response)=>{
          
     }
 })
+
+app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
+
+try {
+const {  SPI, Level } = req.body;
+let nextLevel;
+
+if (Level === "Level1") {
+  nextLevel = "Level2";
+} else if (Level === "Level2") {
+  nextLevel = "Level3";
+} else if (Level === "Level3") {
+  nextLevel = "Level4";
+} else if (Level === "Level4") {
+  nextLevel = "Level5"; 
+}
+else if(Level==="Level5"){
+    nextLevel  =null // all the levels are comp
+}
+
+
+console.log("NextLevel"  , nextLevel);
+const userId = Number(req.userId?.id);
+
+const existingLevel = await prisma.level.findUnique({
+    where: {
+      userId_levelName: {
+        userId,
+        levelName: Level,
+      },
+    },
+  });
+  
+  
+  if (existingLevel) {
+
+    if (!existingLevel.isComp && nextLevel ) {
+      // Update only if `isComp` is not true
+
+      const user=await prisma.user.update({
+        where:{
+            id:userId
+        },
+        data:{
+            Level:nextLevel,
+            levels:{
+                update:{
+                    where:{
+                        userId_levelName: {
+                            userId,
+                           levelName: Level, // Assuming Level is passed in as a string that matches LevelName enum
+                         },
+                    },
+                    data:{
+                        SPI:Number(SPI),
+                        bestSPI:Number(SPI),
+                        isComp:true
+                    }
+                }
+            }
+        }
+        ,include:{
+            levels:true,
+        }
+      })
+      res.send(nextLevel);
+      return ;
+      
+    } else if(!existingLevel.isComp && !nextLevel) {
+        // player has comp the last level 
+        
+        const user=await prisma.user.update({
+            where:{
+                id:userId
+            },
+            data:{
+                Level:"Level1",
+                isCompleted:true,
+                levels:{
+                    update:{
+                        where:{
+                            userId_levelName: {
+                                userId,
+                               levelName: Level,
+                             },
+                        },
+                        data:{
+                            SPI:Number(SPI),
+                            bestSPI:Number(SPI),
+                            isComp:true
+                        }
+                    }
+                }
+            }
+            ,include:{
+                levels:true,
+            }
+          })
+
+          const totalSPI = user.levels.reduce((acc, level) => acc + level.bestSPI, 0);
+
+          const averageSPI = user.levels.length > 0 ? totalSPI / user.levels.length : 0;
+          
+         const result= await prisma.user.update(  {
+                where:{
+                    id:userId
+                },data:{
+                    CPI:averageSPI
+                }
+            }
+          )
+          res.send(nextLevel);
+          return;
+    } 
+    else  if(existingLevel.isComp){
+        // player has already comp this level once so assign the bestSPI as the 
+        if(SPI<=existingLevel.bestSPI){
+            // dont do anything
+            res.send(nextLevel) // send the level info of the user which he has completed
+            return ;
+           
+        }
+       else if(SPI >= 7.5 && existingLevel.bestSPI<7.5 ){
+            // bestspi =7.5
+          const user=  await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
+                                    levelName: Level,
+                                }
+                            },
+                            data:{
+                                SPI:SPI,
+                                bestSPI:7.5
+                            }
+                        }
+                    }
+                }
+            })
+
+            res.send(nextLevel);
+            return ;
+        }
+        else if(SPI>existingLevel.bestSPI && existingLevel.bestSPI<7.5 ){
+            //bestspi= spi
+           const user= await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
+                                    levelName: Level,
+                                }
+                            },
+                            data:{
+                                bestSPI:SPI
+                            }
+                        }
+                    }
+                }
+            })
+            res.send(nextLevel);
+            return ;
+        }
+       
+    }
+    
+  } else {
+    // If no existing record, create a new one
+        if (nextLevel) {
+        // Update only if `isComp` is not true
+
+        // completes the existing level in one go (first attempt) 
+        const user=await prisma.user.update({
+          where:{
+              id:userId
+          },
+          data:{
+              Level:nextLevel,
+              levels:{
+                  create:{
+                        levelName: Level,
+                          SPI:Number(SPI),
+                          bestSPI:Number(SPI),
+                          isComp:true
+                  }
+              }
+          }
+          ,include:{
+              levels:true,
+          }
+        })
+        res.send(nextLevel);
+        return ;
+        
+      } 
+      else if(!nextLevel){
+        // next level do not exist player has comp the last level in 1 go
+
+        const user=await prisma.user.update({
+            where:{
+                id:userId
+            },
+            data:{
+                Level:"Level1",
+                isCompleted:true,
+                levels:{
+                    create:{
+                        levelName: Level,
+                        SPI:Number(SPI),
+                        bestSPI:Number(SPI),
+                        isComp:true
+                    }
+                }
+            }
+            ,include:{
+                levels:true,
+            }
+          })
+
+          const totalSPI = user.levels.reduce((acc, level) => acc + level.bestSPI, 0);
+
+          const averageSPI = user.levels.length > 0 ? totalSPI / user.levels.length : 0;
+          
+          await prisma.user.update(  {
+                where:{
+                    id:userId
+                },data:{
+                    CPI:averageSPI
+                }
+            }  )
+
+            res.send(nextLevel);
+            return ;
+
+
+      }
+
+  }
+    
+  }
+  catch(e){
+    console.log(e.message);
+    res.status(411).send("Error while doing level complete calls");
+    return;
+  }
+   
+})
+
+
 
 const PORT = process.env.PORT || 3000;
 httpserver.listen(PORT, () => {
