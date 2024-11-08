@@ -38,7 +38,8 @@ model User {
   isCompleted      Boolean @default(false)
   CPI              Float   @default(0) 
   levels           Level[] // Relation to Level
-
+  onGoingTime     Float   @default(0)
+  penalities      Int   @default(0)
 }
 
 model Level {
@@ -52,5 +53,7 @@ model Level {
   y         Int       @default(1550)
   createdAt DateTime  @default(now())
   bestSPI  Float @default(7.5)
+  onGoingTime     Float   @default(0)
+  penalities      Int   @default(0)
   @@unique([userId, levelName]) // Each user should only have one entry per level
 }

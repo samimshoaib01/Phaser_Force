@@ -17,15 +17,15 @@ import { Socket } from "socket.io-client";
 
 function App() {
 
-    const isvalid=useRecoilValue(validUser);
-    console.log('check valid: ',isvalid);
+    const user=useRecoilValue(validUser);
+    console.log('check valid: ',user.isValid);
 
   const [socket, setSocket] = useState<null | Socket >(null);
 
   useEffect(() => {
-    if (isvalid) {
+    if (user.isValid) {
 
-      const newSocket = SocketConnection(isvalid);
+      const newSocket = SocketConnection(user);
 
       setSocket(newSocket);
 
@@ -38,7 +38,7 @@ function App() {
       }
 
     }
-  }, [isvalid]);
+  }, [user.isValid]);
     return (
         
         <BrowserRouter>
@@ -48,7 +48,7 @@ function App() {
                 <Route path="/signin" element={<Signin/>}/>
                 <Route path="/signup" element={<Signup/>}/>
                 <Route path="/play"  element={ <Play/> }/>
-                <Route path="/game" element={ isvalid? <PhaserGame socket={socket} /> :<Signup/>}/>
+                <Route path="/game" element={  <PhaserGame socket={socket} />}/>
                 <Route path="/newgame" element={<NewGame/>}/>
                 <Route path="/resume" element={<Resume/>}/>
                 <Route path="/leaderboard" element={<Leaderboard/>}/>

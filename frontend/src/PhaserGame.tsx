@@ -48,6 +48,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({ socket }) => {
       const savedProgress = localStorage.getItem('playerProgress');
       if (savedProgress) {
         try {
+          
           const progress = JSON.parse(savedProgress);
           console.log('Phaser progress:', progress);
 

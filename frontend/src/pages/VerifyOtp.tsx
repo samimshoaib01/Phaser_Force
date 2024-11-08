@@ -36,7 +36,7 @@ const setisValid=useSetRecoilState(validUser);
     const decode=jwtDecode<DecodedToken>(token);
     const userName=decode.name;
     const verified=true;
-    setisValid(true);
+    setisValid({isValid:true,name:userName,userId:Number(decode.userId)});
     navigate(`/play?verified=${encodeURIComponent(verified)}&userName=${encodeURIComponent(userName)}`);
   } catch (error) {
     console.log(error);

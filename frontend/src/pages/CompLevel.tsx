@@ -22,7 +22,7 @@ const generateTestData = (count: number): Levels[] => {
 };
 
 export const CompLevel = () => {
-    const isvalid = useRecoilValue(validUser);
+    const isvalid = useRecoilValue(validUser).isValid;
     const navigate = useNavigate();
     const [levels, setLevels] = useState<Levels[]>([]);
 

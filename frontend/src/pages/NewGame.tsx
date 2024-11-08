@@ -1,27 +1,30 @@
 import { useEffect } from "react"
-import { useRecoilValue } from "recoil"
-import { validUser } from "../components/recoil"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+interface newgame{
+  Level:string,
+  isCompleted:boolean,
+  x:number,
+  y: number
+}
+
 export const NewGame=()=> {
-    const isvalid=useRecoilValue(validUser);
     const navigate=useNavigate();
 
     useEffect(()=>{
-      if(!isvalid){
-        navigate("/signup");
-      }
+    
         const fun=async()=>{
           try {
-            const res = await axios.put("http://localhost:3000/newgame",{},{
+            const res = await axios.put<newgame>("http://localhost:3000/newgame",{},{
               headers:{
                 Authorization: localStorage.getItem("token")
               }
             });
   
-            console.log("user level and coordinates: ",res.data);
+           
             const user=res.data;
+            console.log("value to be set in local storage" ,user);
             localStorage.setItem("playerProgress",JSON.stringify(user));
             navigate('/game')
           } catch (error) {

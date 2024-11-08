@@ -1,3 +1,4 @@
+import axios from "axios"
 export default class Level1 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level1' });
@@ -34,7 +35,6 @@ export default class Level1 extends Phaser.Scene {
         
         if (socket) {
           // Use the socket as needed, e.g., emit a message
-        //   socket.emit('level-start', { level: 'Level1' });
           console.log('Socket connection in Level1:', socket.id);
         } else {
           console.warn('Socket not available in Level1');
@@ -201,24 +201,26 @@ export default class Level1 extends Phaser.Scene {
 
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
 
-this.input.keyboard.on('keydown-ESC', () => {
-    this.saveProgress();
-    this.scene.pause(); // NOT RESUMING AFTER PRESSING ESC AGAIN
-});
+    this.input.keyboard.on('keydown-ESC', () => {
+        this.saveProgress();
+        this.scene.pause(); // NOT RESUMING AFTER PRESSING ESC AGAIN
+    });
 
-// Outside the Phaser scene or at the top level (e.g., in main game script)
-window.addEventListener('beforeunload', (event) => {
-    this.saveProgress();
-    event.preventDefault();
-    event.returnValue = ''; // Trigger confirmation dialog
-});
+    // Outside the Phaser scene or at the top level (e.g., in main game script)
+    window.addEventListener('beforeunload', (event) => {
+        this.saveProgress();
+        const latestlocation=localStorage.getItem("playerProgress");
+        const {x,y,elapsedTime, penalties, Level} = latestlocations;
+        const socket = this.game.registry.get('socket'); 
+        if(socket){
+            console.log("Just before disconnect: ",socket.id);
+            socket.emit("save-prgress",latestlocation);
+        }
+        event.preventDefault();
+        event.returnValue = ''; // Trigger confirmation dialog
+    });
 
-        
-        
-        
-        
-
-        // Create a red dot to represent the character on the minimap
+    // Create a red dot to represent the character on the minimap
         this.redDot = this.add.circle(0, 0, 20, 0xff0000);
         
         // Ensure red dot is ignored by main camera and shown in minimap
@@ -335,10 +337,43 @@ window.addEventListener('beforeunload', (event) => {
             const data =  this.onLevelComplete();
             const {time , penalty , CPI } =data;
             console.log("data: ",data);
-            const socket = this.game.registry.get('socket');
-            socket.emit("level-comp",data);
+          
+                const fun=async()=>{
+                    try {
+                         const res=await axios.post("http://localhost:3000/level-complete",{
+                       SPI: CPI,
+                        Level:"Level1",
+    
+                    },{
+                        headers: {Authorization : localStorage.getItem("token")}
+                    } )
+                    const nextLevel=res.data;
+                    console.log(nextLevel);
+                    if(nextLevel==null){
+                        //game is comp 
+                    }
+                    else{
+
+                       const localStoragedata= localStorage.getItem("playerProgress")
+                       let playerProgress = JSON.parse(localStoragedata);
+                      console.log("data coming to local storage : " ,playerProgress);
+                       playerProgress.Level=nextLevel;
+                       localStorage.setItem("playerProgress", JSON.stringify(playerProgress));
+                    console.log("data going to local storage : " ,playerProgress);
+                    this.scene.start(nextLevel);
+
+                    }
+                } catch (error) {
+                        
+                    }
+                   
+                }
+
+                fun();
+            // const socket = this.game.registry.get('socket');
+            // socket.emit("level-comp",data);
             console.log("In completion zone, calling onLevelComplete.");
-            this.onLevelComplete();
+            // this.onLevelComplete();
         } else {
             this.penalties++;
             console.log("Not in completion zone.");
@@ -386,18 +421,19 @@ window.addEventListener('beforeunload', (event) => {
 
     saveProgress = () => {
         const progress = {
-            position: {
-                x: this.character.x,
-                y: this.character.y
-            },
+            x: this.character.x,
+            y: this.character.y,
             elapsedTime: this.elapsedTime,
-            penalties: this.penalties
+            penalties: this.penalties,
+            Level:"Level1"
+
         };
         localStorage.setItem('playerProgress', JSON.stringify(progress));
         console.log("Progress saved:", progress);
     };
     
 
+        
         loadProgress() {
         const savedProgress = localStorage.getItem('playerProgress');
         
@@ -406,17 +442,17 @@ window.addEventListener('beforeunload', (event) => {
                 const progress = JSON.parse(savedProgress);
     
                 // Ensure position, elapsedTime, and penalties exist and have valid data
-                if (progress.position && typeof progress.position.x === 'number' && typeof progress.position.y === 'number') {
-                    this.character.setPosition(progress.position.x, progress.position.y);
+                if ( typeof progress.x === 'number' && typeof progress.y === 'number') {
+                    this.character.setPosition(progress.x, progress.y);
                 } else {
                     console.warn("Saved position data is missing or invalid. Starting at default position.");
                 }
     
                 // Load elapsedTime if it exists and is a valid number
-                // this.elapsedTime = typeof progress.elapsedTime === 'number' ? progress.elapsedTime : 0;
+                this.elapsedTime = typeof progress.elapsedTime === 'number' ? progress.elapsedTime : 0;
     
-                // // Load penalties if it exists, default to 0 if not
-                // this.penalties = typeof progress.penalties === 'number' ? progress.penalties : 0;
+                // Load penalties if it exists, default to 0 if not
+                this.penalties = typeof progress.penalties === 'number' ? progress.penalties : 0;
     
                 console.log("Progress loaded:", progress);
             } catch (error) {

@@ -6,7 +6,8 @@ import axios from "axios";
 
 
 export const Resume=() =>{
-  const isvalid=useRecoilValue(validUser);
+  const isvalid=useRecoilValue(validUser).isValid;
+  
   const navigate=useNavigate();
   useEffect(()=>{
     if(!isvalid){
