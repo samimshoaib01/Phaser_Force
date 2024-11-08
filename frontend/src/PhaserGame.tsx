@@ -7,12 +7,13 @@ interface PhaserGameProps {
   socket: Socket | null;
 }
 
-export const PhaserGame: React.FC<PhaserGameProps> = ({ socket }) => {
+export const PhaserGame: React.FC<PhaserGameProps> = ({ socket } : {socket : Socket | null }) => {
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
+    // console.log("socket inside phaser , (game) : " ,socket)
   useEffect(() => {
-    // Only initialize the game once when the component mounts
+
     if (!gameRef.current && gameContainerRef.current) {
       const config: Phaser.Types.Core.GameConfig = {
         type: Phaser.AUTO,

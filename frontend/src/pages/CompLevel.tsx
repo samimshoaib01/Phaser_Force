@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useRecoilValue } from "recoil";
-import { validUser } from "../components/recoil";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface Levels {
     levelName: string;
@@ -22,33 +20,29 @@ const generateTestData = (count: number): Levels[] => {
 };
 
 export const CompLevel = () => {
-    const isvalid = useRecoilValue(validUser).isValid;
-    const navigate = useNavigate();
     const [levels, setLevels] = useState<Levels[]>([]);
+    const navigate=useNavigate();
 
     useEffect(() => {
-        if (!isvalid) {
-            navigate("/signup");
-        }
-
         // Uncomment the following line to use axios request in real use-case
-        // const fun = async () => {
-        //     try {
-        //         const res = await axios.get<Levels[]>("http://localhost:3000/complevel", {
-        //             headers: {
-        //                 Authorization: localStorage.getItem("token") || ''
-        //             }
-        //         });
-        //         setLevels(res.data);
-        //     } catch (error) {
-        //         navigate("/signin");
-        //     }
-        // };
+        const fun = async () => {
+            try {
+                const res = await axios.get<Levels[]>("http://localhost:3000/complevel", {
+                    headers: {
+                        Authorization: localStorage.getItem("token") || ''
+                    }
+                });
+                setLevels(res.data);
+            } catch (error) {
+                navigate("/signin");
+            }
+        };
+        fun();
 
         // Using test data instead of actual API call for testing
-        setLevels(generateTestData(5)); // Generates 5 random levels
+        // setLevels(generateTestData(5)); // Generates 5 random levels
 
-    }, [isvalid, navigate]);
+    }, [ ]);
 
     // Find the first incomplete level
     const firstIncompleteLevelIndex = levels.findIndex(level => !level.isComp);

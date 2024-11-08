@@ -17,7 +17,7 @@ const checkValidUser = async () => {
                 Authorization: token
             }
         });
-        const { userId, name , isValid} = res.data; // Assuming `userId` and `name` are returned in the response
+        const { userId, name , isValid} = res.data; 
         return { isValid, userId, name };
     } catch (error) {
         return { isValid: false, userId: 0, name: "Invalid User" };

@@ -42,7 +42,15 @@ export default class Level1 extends Phaser.Scene {
       }
 
     create() {
-        
+        // const socket = this.game.registry.get('socket'); // or this.game.data.get('socket')
+        this.time.addEvent({
+            delay: 1000, // 1000 ms = 1 second
+            callback: () => {
+                this.saveProgress();
+
+            },
+            loop: true,
+          });
         this.createQuestionPanel(`With a name that flows like a gentle stream,
         It’s the place to find snacks and a tasty dream.
         Head to this spot for a savory array,
@@ -209,13 +217,6 @@ export default class Level1 extends Phaser.Scene {
     // Outside the Phaser scene or at the top level (e.g., in main game script)
     window.addEventListener('beforeunload', (event) => {
         this.saveProgress();
-        const latestlocation=localStorage.getItem("playerProgress");
-        const {x,y,elapsedTime, penalties, Level} = latestlocations;
-        const socket = this.game.registry.get('socket'); 
-        if(socket){
-            console.log("Just before disconnect: ",socket.id);
-            socket.emit("save-prgress",latestlocation);
-        }
         event.preventDefault();
         event.returnValue = ''; // Trigger confirmation dialog
     });
@@ -345,19 +346,24 @@ export default class Level1 extends Phaser.Scene {
                         Level:"Level1",
     
                     },{
-                        headers: {Authorization : localStorage.getItem("token")}
+                        headers: {
+                            Authorization : localStorage.getItem("token")
+                        } 
                     } )
                     const nextLevel=res.data;
-                    console.log(nextLevel);
+                    console.log("Next level: ",nextLevel);
                     if(nextLevel==null){
                         //game is comp 
                     }
                     else{
-
                        const localStoragedata= localStorage.getItem("playerProgress")
                        let playerProgress = JSON.parse(localStoragedata);
                       console.log("data coming to local storage : " ,playerProgress);
                        playerProgress.Level=nextLevel;
+                       playerProgress.x=800
+                       playerProgress.y=1550
+                       playerProgress.elapsedTime=0
+                       playerProgress.penalties=0
                        localStorage.setItem("playerProgress", JSON.stringify(playerProgress));
                     console.log("data going to local storage : " ,playerProgress);
                     this.scene.start(nextLevel);
@@ -383,13 +389,8 @@ export default class Level1 extends Phaser.Scene {
     
 
     onLevelComplete() {
-        console.log("CURRENT : ",this.time.now );
-        console.log("START TIME : ", this.startTime)
         this.elapsedTime = (this.time.now - this.startTime) / 1000;
-        console.log("TIME : ",this.elapsedTime);
-        console.log(this.penalties);
         const cpi = this.calculateCPI(this.elapsedTime, this.penalties);
-        console.log(`Level completed! CPI: ${cpi.toFixed(2)}`);
         return { time : this.elapsedTime, penalty : this.penalties,CPI: cpi.toFixed(2) }
         this.clearProgress();
     }
@@ -420,6 +421,8 @@ export default class Level1 extends Phaser.Scene {
     }
 
     saveProgress = () => {
+
+      this.elapsedTime = (this.time.now - this.startTime) / 1000;
         const progress = {
             x: this.character.x,
             y: this.character.y,

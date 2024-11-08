@@ -20,10 +20,11 @@ const prisma = new PrismaClient(); // Create a Prisma Client instance
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
+    origin: 'http://localhost:5173', // your frontend URL
+    credentials: true, // allow cookies to be sent
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // allowed headers
 }));
-
 
 const httpserver=createServer(app);
 
@@ -36,52 +37,82 @@ const io=new Server(httpserver,{
 });
 
 
+interface PlayerProgress {
+    x: number ;
+    y: number;
+    elapsedTime: number;
+    penalties: number;
+    Level: any;
+    userId?: number; // Optional initially, if not already set
+}
+
+let res:PlayerProgress;
+
 io.on('connection',(socket)=>{
 
-    const userId=Number(socket.handshake.query.userId);
     console.log("Socket connected with userId: ",socket.id);
 
-    
-    socket.on("save-progress",async (data)=>{
-        // on resume restore the old time and penalties
-        const {x,y,elapsedTime, penalties, Level}=data;
-      const updatedValue=  await prisma.user.update({
-            where:{
-                id:userId
-            },
-            data:{
-                Level,
-                x,
-                y,
-                onGoingTime:elapsedTime,
-                penalities:penalties,
-                levels:{
-                    upsert:{
-                        where:{
-                            userId_levelName:{
-                                userId,
-                                levelName:Level
-                            }
-                        },update:{
-                            x,
-                            y,
-                            onGoingTime:elapsedTime,
-                            penalities:penalties,
-                        },
-                        create:{
+   socket.on("myEvent",(data)=>{
+    res=data;
+    console.log(res);
+   })
+      
+   socket.on('disconnect',async()=>{
+    try {
+        const {x,y,elapsedTime, penalties, Level,userId}=res ;
+        console.log(typeof x );
+        console.log(x);
 
-                            levelName: Level,
-                            x,
-                            y,
-                            onGoingTime:elapsedTime,
-                            penalities:penalties,
+    if (!userId || !Level) {
+        throw new Error("userId and Level must be defined");
+    }
+
+    console.log("last time :" ,res);
+
+    const updatedValue=  await prisma.user.update({
+        where:{
+            id:userId
+        },
+        data:{
+            Level,
+            x,
+            y,
+            onGoingTime:elapsedTime,
+            penalities:penalties,
+            levels:{
+                upsert:{
+                    where:{
+                        userId_levelName:{
+                            userId:userId ,
+                            levelName:Level
                         }
+                    },update:{
+                        x,
+                        y,
+                        onGoingTime:elapsedTime,
+                        penalities:penalties,
+                    },
+                    create:{
+
+                        levelName: Level,
+                        x,
+                        y,
+                        onGoingTime:elapsedTime,
+                        penalities:penalties,
                     }
                 }
             }
-        })
-        console.log(updatedValue);
+        }
     })
+    console.log(updatedValue);  
+    return ;
+    } catch (error) {
+        console.log(error);
+        return ;
+    }
+    
+    })
+
 })
 
 app.use(session({
@@ -190,7 +221,10 @@ interface CustomRequest extends Request {
     }
 }
 app.get('/auth', checkUser ,(req:CustomRequest, res:Response) => {
-   res.send("valid user");
+    const userId=req.userId?.id;
+    const name=req.userName?.name;
+    console.log(name,userId);
+   res.send({userId,name,isValid:true});
 });
 
 const transporter = nodemailer.createTransport({
@@ -378,7 +412,7 @@ app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
 
         const user=await prisma.user.findFirst({
             where:{
-                id:Number(userId)
+                id:Number(userId),
             },
             select:{
                 Level:true,
@@ -387,7 +421,8 @@ app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
                 onGoingTime:true,
                 penalities:true
             }
-        });
+        }); 
+        // user will be null if all the levels are comp
         console.log("UUUUUU: ",user);
         res.send(user);
         return ;
@@ -451,35 +486,37 @@ app.get("/complevel",checkUser,async(req:CustomRequest,res:Response)=>{
 
 app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
 
-try {
-const {  SPI, Level } = req.body;
-let nextLevel;
+    try {
+        
+    const userId = Number(req.userId?.id);
 
-if (Level === "Level1") {
-  nextLevel = "Level2";
-} else if (Level === "Level2") {
-  nextLevel = "Level3";
-} else if (Level === "Level3") {
-  nextLevel = "Level4";
-} else if (Level === "Level4") {
-  nextLevel = "Level5"; 
-}
-else if(Level==="Level5"){
-    nextLevel  =null // all the levels are comp
-}
+    const {  SPI, Level } = req.body;
+    let nextLevel;
+
+    if (Level === "Level1") {
+    nextLevel = "Level2";
+    } else if (Level === "Level2") {
+    nextLevel = "Level3";
+    } else if (Level === "Level3") {
+    nextLevel = "Level4";
+    } else if (Level === "Level4") {
+    nextLevel = "Level5"; 
+    }
+    else if(Level==="Level5"){
+        nextLevel  =null // all the levels are comp
+    }
 
 
-console.log("NextLevel"  , nextLevel);
-const userId = Number(req.userId?.id);
+    console.log("NextLevel"  , nextLevel);
 
-const existingLevel = await prisma.level.findUnique({
-    where: {
-      userId_levelName: {
-        userId,
-        levelName: Level,
-      },
-    },
-  });
+    const existingLevel = await prisma.level.findUnique({
+        where: {
+        userId_levelName: {
+            userId,
+            levelName: Level,
+        },
+        },
+    });
   
   
   if (existingLevel) {
@@ -508,12 +545,13 @@ const existingLevel = await prisma.level.findUnique({
                     }
                 }
             }
-        }
-        ,include:{
-            levels:true,
-        }
-      })
-      res.send(nextLevel);
+        },
+        include: {
+            levels: true
+          },
+        });
+        // send penalties and elap. time
+      res.send({nextLevel});
       return ;
       
     } else if(!existingLevel.isComp && !nextLevel) {
@@ -572,6 +610,14 @@ const existingLevel = await prisma.level.findUnique({
         }
        else if(SPI >= 7.5 && existingLevel.bestSPI<7.5 ){
             // bestspi =7.5
+            enum LevelName {
+                Level1 = "Level 1",
+                Level2 = "Level 2",
+                Level3 = "Level 3",
+                Level4 = "Level 4",
+                Level5 = "Level 5",
+              }
+
           const user=  await prisma.user.update({
                 where:{
                     id:userId
@@ -589,6 +635,17 @@ const existingLevel = await prisma.level.findUnique({
                                 SPI:SPI,
                                 bestSPI:7.5
                             }
+                        }
+                    }
+                },
+                include:{
+                    levels:{
+                        where:{
+                            userId:userId,
+                        },select:{
+                            levelName:true,
+                            onGoingTime:true,
+                            penalities:true
                         }
                     }
                 }
@@ -700,7 +757,6 @@ const existingLevel = await prisma.level.findUnique({
     
   }
   catch(e){
-    console.log(e.message);
     res.status(411).send("Error while doing level complete calls");
     return;
   }

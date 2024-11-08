@@ -1,18 +1,12 @@
 import { useEffect } from "react"
-import { useRecoilValue } from "recoil"
-import { validUser } from "../components/recoil"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 
 export const Resume=() =>{
-  const isvalid=useRecoilValue(validUser).isValid;
   
   const navigate=useNavigate();
   useEffect(()=>{
-    if(!isvalid){
-      navigate("/signup");
-    }
 
       const fun=async()=>{
         try {

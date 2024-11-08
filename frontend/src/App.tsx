@@ -17,14 +17,13 @@ import { Socket } from "socket.io-client";
 
 function App() {
 
-    const user=useRecoilValue(validUser);
-    console.log('check valid: ',user.isValid);
-
-  const [socket, setSocket] = useState<null | Socket >(null);
-
+  const user=useRecoilValue(validUser);
+  const [socket, setSocket] = useState< Socket |null >(null);
+ 
+  console.log(user);
+  
   useEffect(() => {
     if (user.isValid) {
-
       const newSocket = SocketConnection(user);
 
       setSocket(newSocket);
@@ -36,9 +35,9 @@ function App() {
         }
 
       }
-
     }
-  }, [user.isValid]);
+  }, [user,user?.isValid]);
+
     return (
         
         <BrowserRouter>

@@ -182,7 +182,7 @@ export default class Level2 extends Phaser.Scene {
             // Set up overlap detection when entering the zone
             this.physics.add.overlap(this.character, completionZone, () => {
                 this.inCompletionZone = true;
-                console.log('Player entered the completion zone!');
+                console.log('Player entered the completion zone! 2');
             }, null, this);
         
             return completionZone;

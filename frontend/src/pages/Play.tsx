@@ -1,10 +1,8 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useRecoilState } from "recoil";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {  useSetRecoilState } from "recoil";
 import { validUser } from "../components/recoil";
 import { jwtDecode } from "jwt-decode";
-
-
 
 interface DecodedToken{
   name:string,
@@ -12,16 +10,17 @@ interface DecodedToken{
   userId:string,
   Level:string
 } 
+
 export const Play = () => {
   
-  const [isValid, setisValid] = useRecoilState(validUser);
+  const setisValid = useSetRecoilState(validUser);
   const navigate = useNavigate();
-
+  const location=useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const token = queryParams.get('verified');
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const token = queryParams.get('verified');
-    console.log("TOKEN!! : ", token);
-    if (token) {
+      
+      if (token) {
       localStorage.setItem("token", token);
       const decode=jwtDecode<DecodedToken>(token);
       const userName=decode.name;
