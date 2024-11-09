@@ -2,17 +2,19 @@ import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { scenes } from './config/scenes';
 import { Socket } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 
 interface PhaserGameProps {
   socket: Socket | null;
 }
 
-export const PhaserGame: React.FC<PhaserGameProps> = ({ socket }) => {
+export const PhaserGame: React.FC<PhaserGameProps> = ({ socket } : {socket : Socket | null }) => {
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-
+  const navigate=useNavigate();
+    // console.log("socket inside phaser , (game) : " ,socket)
   useEffect(() => {
-    // Only initialize the game once when the component mounts
+
     if (!gameRef.current && gameContainerRef.current) {
       const config: Phaser.Types.Core.GameConfig = {
         type: Phaser.AUTO,
@@ -38,7 +40,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({ socket }) => {
       };
 
       gameRef.current = new Phaser.Game(config);
-
+      gameRef.current.registry.set("navigate",navigate);
       // Store the socket in the game registry
       if (socket) {
         gameRef.current.registry.set('socket', socket);

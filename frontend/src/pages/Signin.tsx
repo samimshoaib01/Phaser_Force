@@ -2,20 +2,21 @@ import { useState } from "react";
 import SignInButton from "../SignInButton";
 import { useNavigate } from "react-router-dom";
 import { VerifyOtp } from "./VerifyOtp";
+//@ts-ignore
 import axios, { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useRecoilState,  } from "recoil";
 import { validUser } from "../components/recoil";
 
 
-interface SignupResponse {
+interface SigninResponse {
   token: string; 
 }
 
 interface DecodedToken{
   name:string,
   email:string,
-  userId:string,
+  id:number,
   Level:string
 }
 export const Signin = () => {
@@ -31,19 +32,19 @@ export const Signin = () => {
 
     try {
       
-      const res = await axios.post<SignupResponse>("http://localhost:3000/auth/local", {
+      const res = await axios.post<SigninResponse>("http://localhost:3000/auth/local", {
         email,
         password,
       });
 
       const token=res.data.token;
-      console.log(token);
       localStorage.setItem("token",token);
       const decode=jwtDecode<DecodedToken>(token);
-     const userName=decode.name;
-     const userId=decode.userId;
+      const userName=decode.name;
+      const userId=Number(decode.id);
       setisValid({isValid:true,name:userName,userId:Number(userId)});
-      navigate(`/play?verified=${encodeURIComponent(isValid.isValid)}&userName=${encodeURIComponent(userName)}`);
+      navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
+      
     } catch (error:Error | AxiosError) {
         
         if (error.response) {

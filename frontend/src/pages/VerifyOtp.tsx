@@ -12,7 +12,7 @@ interface SignupResponse {
 interface DecodedToken{
   name:string,
   email:string,
-  userId:string,
+  id:number,
   Level:string
 }
 
@@ -31,17 +31,16 @@ const setisValid=useSetRecoilState(validUser);
         }
     })
     const token=res.data.token;
-    console.log(token);
     localStorage.setItem("token",token);
     const decode=jwtDecode<DecodedToken>(token);
     const userName=decode.name;
-    const verified=true;
-    setisValid({isValid:true,name:userName,userId:Number(decode.userId)});
-    navigate(`/play?verified=${encodeURIComponent(verified)}&userName=${encodeURIComponent(userName)}`);
+    setisValid({isValid:true,name:userName,userId:Number(decode.id)});
+    navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
+
   } catch (error) {
+    navigate("/signup");
     console.log(error);
   }  
-
   };
 
   return (

@@ -39,7 +39,7 @@ model User {
   CPI              Float   @default(0) 
   levels           Level[] // Relation to Level
   onGoingTime     Float   @default(0)
-  penalities      Int   @default(0)
+  penalities      Int   @default(0) // it should penalties (typo)
 }
 
 model Level {
