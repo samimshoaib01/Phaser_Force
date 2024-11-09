@@ -444,9 +444,11 @@ app.get("/leaderboard",async(req,res)=>{
                     CPI:true,
                     name:true,
                 },
-                orderBy:{
-                    CPI:'desc' // to get the highest cpi at the top
-                }
+                orderBy:[{ CPI:'desc'}, // to get the highest cpi at the top
+                    {createdAt:'asc'}
+                ]
+                   
+                
             })
             console.log(winners);
             res.send(winners);
@@ -455,6 +457,55 @@ app.get("/leaderboard",async(req,res)=>{
              res.status(400).send("Error while fetching winners");
              return ;
     }
+});
+
+enum LevelName {
+    Level1 = "Level1",
+    Level2 = "Level2",
+    Level3 = "Level3",
+    Level4 = "Level4",
+    Level5 = "Level5",
+  }
+
+app.get("/level-leaderboard/:levelName",checkUser,async(req:CustomRequest,res)=>{
+    try {
+        const userId = req.userId?.id;
+        const { levelName } = req.params;
+    
+        // Check if levelName is valid and matches an enum value
+        if (!(levelName in LevelName)) {
+          // If it's not a valid enum value, send an error response
+           res.status(400).send({ message: "Invalid level name" });
+           return ;
+        }
+    
+        // If levelName is valid, proceed with querying the database
+        const winners = await prisma.level.findMany({
+          where: {
+            isComp: true,
+            levelName: levelName as LevelName, // Cast levelName to LevelName enum
+          },
+          select: {
+            bestSPI: true,
+            user: {
+              select: {
+                name: true,
+                id:true,
+              },
+            },
+          },
+          orderBy:{
+            bestSPI:"desc"
+          }
+        });
+    
+        console.log("WW: ", winners);
+        res.send(winners);
+        return;
+      } catch (error) {
+        res.status(400).send("Error while fetching winners");
+        return;
+      }
 });
 
 app.get("/complevel",checkUser,async(req:CustomRequest,res:Response)=>{
@@ -627,6 +678,26 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
         // player has already comp this level once so assign the bestSPI as the 
         if(SPI<=sortedLevels[0].bestSPI){
             // dont do anything
+            const user=  await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
+                                    levelName: Level,
+                                }
+                            },
+                            data:{
+                              isComp:true
+                            }
+                        }
+                    }
+                },
+            })
             res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
             // send the level info of the user which he has completed
             return ;
@@ -657,7 +728,8 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                             },
                             data:{
                                 SPI:SPI,
-                                bestSPI:7.5
+                                bestSPI:7.5,
+                              isComp:true
                             }
                         }
                     }
@@ -781,7 +853,6 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
     
   }
   catch(e){
-    console.log(e.message);
     res.status(411).send("Error while doing level complete calls");
     return;
   }

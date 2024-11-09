@@ -357,8 +357,9 @@ window.addEventListener('beforeunload', (event) => {
                         localStorage.setItem("playerProgress", JSON.stringify(playerProgress));
                         console.log("data going to local storage : " ,playerProgress);
                         const navigate = this.game.registry.get('navigate');
-                        // navigate('/leaderboard');
-                        this.scene.start(nextLevel);
+                        const levelName="Level3";
+                        navigate(`/level-leaderboard/${levelName} `);
+                         // this.scene.start(nextLevel);
 
                     }
                 } catch (error) {

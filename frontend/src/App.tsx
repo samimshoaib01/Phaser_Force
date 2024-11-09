@@ -13,6 +13,7 @@ import {CompLevel} from "./pages/CompLevel";
 import { useEffect, useState } from "react";
 import { SocketConnection } from "./components/socket";
 import { Socket } from "socket.io-client";
+import { LevelLeaderboard } from "./pages/LevelLeaderBoard";
 
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
                 <Route path="/newgame" element={<NewGame/>}/>
                 <Route path="/resume" element={<Resume/>}/>
                 <Route path="/leaderboard" element={<Leaderboard/>}/>
+                <Route path="/level-leaderboard/:levelName" element={<LevelLeaderboard/>}/>
                 <Route path="/complevel" element={<CompLevel/>}/>
 
 
