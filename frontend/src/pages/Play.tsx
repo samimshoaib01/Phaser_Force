@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode";
 interface DecodedToken{
   name:string,
   email:string,
-  userId:string,
+  id:string,
   Level:string
 } 
 
@@ -18,13 +18,15 @@ export const Play = () => {
   const location=useLocation();
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get('verified');
+  console.log("TOKENNNN : ",token);
   useEffect(() => {
       
       if (token) {
       localStorage.setItem("token", token);
       const decode=jwtDecode<DecodedToken>(token);
       const userName=decode.name;
-      const userId=decode.userId
+      const userId=decode.id;
+      console.log(decode);
       setisValid({isValid:true,name:userName,userId:Number(userId)});
     } else {
       navigate("/signup");

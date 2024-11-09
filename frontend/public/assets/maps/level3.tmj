@@ -341,8 +341,8 @@
          "name":"Script",
          "objects":[
                 {
-                 "height":174,
-                 "id":3,
+                 "height":31.2727272727273,
+                 "id":17,
                  "name":"",
                  "properties":[
                         {
@@ -353,9 +353,9 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":31,
-                 "x":33.5,
-                 "y":1297.5
+                 "width":32.5454545454545,
+                 "x":1263.63636363636,
+                 "y":448.727272727273
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -367,69 +367,7 @@
          "draworder":"topdown",
          "id":9,
          "name":"DialogZones",
-         "objects":[
-                {
-                 "height":30.5,
-                 "id":6,
-                 "name":"ComputerCenter",
-                 "properties":[
-                        {
-                         "name":"dialog",
-                         "type":"string",
-                         "value":"Computer center"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":62.5,
-                 "x":1185.5,
-                 "y":929
-                }, 
-                {
-                 "height":78,
-                 "id":8,
-                 "name":"Library",
-                 "properties":[
-                        {
-                         "name":"dialog",
-                         "type":"string",
-                         "value":"Library"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":30.6667,
-                 "x":768.667,
-                 "y":608
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":10,
-         "name":"Transitions",
-         "objects":[
-                {
-                 "height":31.4545454545454,
-                 "id":10,
-                 "name":"transition_to_next_map",
-                 "properties":[
-                        {
-                         "name":"transition_zone",
-                         "type":"string",
-                         "value":"next_map"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":9.90909090909099,
-                 "x":1296,
-                 "y":128.272727272727
-                }],
+         "objects":[],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -437,7 +375,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":12,
+ "nextobjectid":18,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",

@@ -509,14 +509,28 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
 
     console.log("NextLevel"  , nextLevel);
 
-    const existingLevel = await prisma.level.findMany({
-        where: {
-            userId,
-            levelName: {
-                in:[nextLevel,Level]
-            },
-        }
-    });
+    let existingLevel;
+    
+    if(nextLevel){
+         existingLevel = await prisma.level.findMany({
+            where: {
+                userId,
+                levelName: {
+                    in:[nextLevel,Level]
+                },
+            }
+        });
+    }
+    else{
+         existingLevel = await prisma.level.findMany({
+            where: {
+                userId,
+                levelName: Level
+                ,
+            }
+        });
+    }
+    
 
     console.log("Before : ",existingLevel);
   
@@ -560,7 +574,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
           },
         });
         // send penalties and elap. time
-      res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
+      res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
       return ;
       
     } else if(!sortedLevels[0].isComp && !nextLevel) {
@@ -606,14 +620,15 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                 }
             }
           )
-         res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
+          res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
           return;
     } 
     else  if(sortedLevels[0].isComp){
         // player has already comp this level once so assign the bestSPI as the 
         if(SPI<=sortedLevels[0].bestSPI){
             // dont do anything
-            res.send(nextLevel) // send the level info of the user which he has completed
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
+            // send the level info of the user which he has completed
             return ;
            
         }
@@ -659,7 +674,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     }
                 }
             })
-            res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
             return ;
         }
         else if(SPI>sortedLevels[0].bestSPI && sortedLevels[0].bestSPI<7.5 ){
@@ -684,7 +699,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     }
                 }
             })
-            res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
             return ;
         }
        

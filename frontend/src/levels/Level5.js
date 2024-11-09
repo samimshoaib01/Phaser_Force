@@ -1,12 +1,12 @@
 import axios from "axios"
-export default class Level2 extends Phaser.Scene {
+export default class Level5 extends Phaser.Scene {
     constructor() {
-        super({ key: 'Level2' });
+        super({ key: 'Level5' });
     }
 
     preload() {
         // Load the tilemap and tileset images
-        this.load.tilemapTiledJSON('level2', 'assets/maps/level2.tmj');
+        this.load.tilemapTiledJSON('level5', 'assets/maps/level5.tmj');
         this.load.image('forestTiles', 'assets/tilesets/forest.png');
         this.load.image('roguelikeCityTiles', 'assets/tilesets/roguelikeCity_magenta.png');
         this.load.image('terrainTiles', 'assets/tilesets/terrain.png');
@@ -31,11 +31,11 @@ export default class Level2 extends Phaser.Scene {
 
     create() {
         
-        this.createQuestionPanel(`L2`);
+        this.createQuestionPanel(`L5`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
-        const map = this.make.tilemap({ key: 'level2' });
+        const map = this.make.tilemap({ key: 'level5' });
 
         // Add the tilesets to the map
         const forestTiles = map.addTilesetImage('forest', 'forestTiles');
@@ -154,7 +154,7 @@ export default class Level2 extends Phaser.Scene {
 
         // Define penalties (initialize to 0)
         const previousPenaliites=JSON.parse(localStorage.getItem("playerProgress") || '{}');
-        if(previousPenaliites && previousPenaliites.Level=="Level2"){
+        if(previousPenaliites && previousPenaliites.Level=="Level5"){
         this.penalities = ( previousPenaliites.penalities ? previousPenaliites.penalities : 0 );  // add the value if got from backend it will be stored in the localstorage
         }
         else{
@@ -332,7 +332,7 @@ window.addEventListener('beforeunload', (event) => {
                     try {
                          const res=await axios.post("http://localhost:3000/level-complete",{
                          SPI: CPI,
-                        Level:"Level2",
+                        Level:"Level5",
     
                     },{
                         headers: {Authorization : localStorage.getItem("token")}
@@ -415,7 +415,7 @@ window.addEventListener('beforeunload', (event) => {
             y: this.character.y,
             elapsedTime: this.elapsedTime,
             penalities:this.penalities,
-            Level:"Level2"
+            Level:"Leve5"
 
         };
         localStorage.setItem('playerProgress', JSON.stringify(progress));

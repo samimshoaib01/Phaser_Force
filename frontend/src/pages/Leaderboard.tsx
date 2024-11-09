@@ -29,7 +29,7 @@ export const Leaderboard = () => {
     };
         // generateRandomWinners(); // Use random data for testing in case of an error
 
-    // fetchWinners();
+    fetchWinners();
   }, []);
 
   return (

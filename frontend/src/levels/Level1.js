@@ -29,19 +29,6 @@ import axios from "axios"
                 
             }
         
-            init() {
-                // Retrieve the socket instance from game registry or data
-                const socket = this.game.registry.get('socket'); // or this.game.data.get('socket')
-                
-                if (socket) {
-                  // Use the socket as needed, e.g., emit a message
-                //   socket.emit('level-start', { level: 'Level1' });
-                  console.log('Socket connection in Level1:', socket.id);
-                } else {
-                  console.warn('Socket not available in Level1');
-                }
-              }
-        
             create() {
                
                 this.createQuestionPanel(`With a name that flows like a gentle stream,
@@ -355,7 +342,7 @@ import axios from "axios"
                                 headers: {Authorization : localStorage.getItem("token")}
                             })
                             const {nextLevel, onGoingTime , penalities}=res.data;
-                            console.log(nextLevel);
+                            console.log("Next Level: ",nextLevel);
                             if(nextLevel==null){
                                 //game is comp 
                             const navigate = this.game.registry.get('navigate');
@@ -480,4 +467,3 @@ import axios from "axios"
             }
         
         }
-        
