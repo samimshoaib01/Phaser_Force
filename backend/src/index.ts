@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import session from 'express-session';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import passport from 'passport';
+import passport, { use } from 'passport';
 import cors from 'cors';
 import { PrismaClient, User } from '@prisma/client'; // Import Prisma Client
 import bcrypt from "bcrypt";
@@ -41,7 +41,7 @@ interface PlayerProgress {
     x: number ;
     y: number;
     elapsedTime: number;
-    penalties: number;
+    penalities: number;
     Level: any;
     userId?: number; // Optional initially, if not already set
 }
@@ -59,7 +59,7 @@ io.on('connection',(socket)=>{
       
    socket.on('disconnect',async()=>{
     try {
-        const {x,y,elapsedTime, penalties, Level,userId}=res ;
+        const {x,y,elapsedTime, penalities, Level,userId}=res ;
         console.log(typeof x );
         console.log(x);
 
@@ -78,7 +78,7 @@ io.on('connection',(socket)=>{
             x,
             y,
             onGoingTime:elapsedTime,
-            penalities:penalties,
+            penalities:penalities,
             levels:{
                 upsert:{
                     where:{
@@ -90,7 +90,7 @@ io.on('connection',(socket)=>{
                         x,
                         y,
                         onGoingTime:elapsedTime,
-                        penalities:penalties,
+                        penalities:penalities,
                     },
                     create:{
 
@@ -98,7 +98,7 @@ io.on('connection',(socket)=>{
                         x,
                         y,
                         onGoingTime:elapsedTime,
-                        penalities:penalties,
+                        penalities:penalities,
                     }
                 }
             }
@@ -410,7 +410,7 @@ app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
     try {
         const userId=req.userId?.id;    
 
-        const user=await prisma.user.findFirst({
+        const user=await prisma.user.findUnique({
             where:{
                 id:Number(userId),
             },
@@ -422,7 +422,7 @@ app.get("/resume",checkUser,async(req:CustomRequest,res)=>{
                 penalities:true
             }
         }); 
-        // user will be null if all the levels are comp
+        // user level will be null if all the levels are comp
         console.log("UUUUUU: ",user);
         res.send(user);
         return ;
@@ -509,19 +509,28 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
 
     console.log("NextLevel"  , nextLevel);
 
-    const existingLevel = await prisma.level.findUnique({
+    const existingLevel = await prisma.level.findMany({
         where: {
-        userId_levelName: {
             userId,
-            levelName: Level,
-        },
-        },
+            levelName: {
+                in:[nextLevel,Level]
+            },
+        }
     });
-  
-  
-  if (existingLevel) {
 
-    if (!existingLevel.isComp && nextLevel ) {
+    console.log("Before : ",existingLevel);
+  
+    const sortedLevels = existingLevel.sort((a, b) => {
+        if (a.levelName === Level) return -1; // Place `Level` first
+        if (b.levelName === Level) return 1;
+        return 0;
+      });
+    
+      console.log("After : ",sortedLevels);
+      
+  if (sortedLevels[0]) {
+
+    if (!sortedLevels[0].isComp && nextLevel ) {
       // Update only if `isComp` is not true
 
       const user=await prisma.user.update({
@@ -551,10 +560,10 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
           },
         });
         // send penalties and elap. time
-      res.send({nextLevel});
+      res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
       return ;
       
-    } else if(!existingLevel.isComp && !nextLevel) {
+    } else if(!sortedLevels[0].isComp && !nextLevel) {
         // player has comp the last level 
         
         const user=await prisma.user.update({
@@ -597,18 +606,18 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                 }
             }
           )
-          res.send(nextLevel);
+         res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
           return;
     } 
-    else  if(existingLevel.isComp){
+    else  if(sortedLevels[0].isComp){
         // player has already comp this level once so assign the bestSPI as the 
-        if(SPI<=existingLevel.bestSPI){
+        if(SPI<=sortedLevels[0].bestSPI){
             // dont do anything
             res.send(nextLevel) // send the level info of the user which he has completed
             return ;
            
         }
-       else if(SPI >= 7.5 && existingLevel.bestSPI<7.5 ){
+       else if(SPI >= 7.5 && sortedLevels[0].bestSPI<7.5 ){
             // bestspi =7.5
             enum LevelName {
                 Level1 = "Level 1",
@@ -650,11 +659,10 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     }
                 }
             })
-
-            res.send(nextLevel);
+            res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
             return ;
         }
-        else if(SPI>existingLevel.bestSPI && existingLevel.bestSPI<7.5 ){
+        else if(SPI>sortedLevels[0].bestSPI && sortedLevels[0].bestSPI<7.5 ){
             //bestspi= spi
            const user= await prisma.user.update({
                 where:{
@@ -676,7 +684,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     }
                 }
             })
-            res.send(nextLevel);
+            res.send({nextLevel,onGoingTime:sortedLevels[1].onGoingTime,penalities:sortedLevels[1].penalities});
             return ;
         }
        
@@ -684,6 +692,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
     
   } else {
     // If no existing record, create a new one
+
         if (nextLevel) {
         // Update only if `isComp` is not true
 
@@ -707,11 +716,13 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
               levels:true,
           }
         })
-        res.send(nextLevel);
+        console.log(user);
+        
+        res.send({nextLevel,onGoingTime:0,penalities:0});
         return ;
         
       } 
-      else if(!nextLevel){
+      else if(!nextLevel){ // only one level in game
         // next level do not exist player has comp the last level in 1 go
 
         const user=await prisma.user.update({
@@ -747,16 +758,15 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                 }
             }  )
 
-            res.send(nextLevel);
+            res.send({nextLevel,onGoingTime:0,penalities:0});
             return ;
-
-
       }
 
   }
     
   }
   catch(e){
+    console.log(e.message);
     res.status(411).send("Error while doing level complete calls");
     return;
   }

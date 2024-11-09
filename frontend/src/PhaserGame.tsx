@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { scenes } from './config/scenes';
 import { Socket } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 
 interface PhaserGameProps {
   socket: Socket | null;
@@ -10,7 +11,7 @@ interface PhaserGameProps {
 export const PhaserGame: React.FC<PhaserGameProps> = ({ socket } : {socket : Socket | null }) => {
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-
+  const navigate=useNavigate();
     // console.log("socket inside phaser , (game) : " ,socket)
   useEffect(() => {
 
@@ -39,7 +40,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({ socket } : {socket : Soc
       };
 
       gameRef.current = new Phaser.Game(config);
-
+      gameRef.current.registry.set("navigate",navigate);
       // Store the socket in the game registry
       if (socket) {
         gameRef.current.registry.set('socket', socket);

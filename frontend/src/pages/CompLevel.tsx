@@ -10,14 +10,14 @@ interface Levels {
 }
 
 // Function to generate random test data
-const generateTestData = (count: number): Levels[] => {
-    return Array.from({ length: count }, (_, i) => ({
-        levelName: `Level ${i + 1}`,
-        SPI: Math.floor(Math.random() * 100),      // Random SPI value between 0 and 100
-        bestSPI: Math.floor(Math.random() * 100),  // Random bestSPI value between 0 and 100
-        isComp: Math.random() > 0.5                // Randomly true or false
-    }));
-};
+// const generateTestData = (count: number): Levels[] => {
+//     return Array.from({ length: count }, (_, i) => ({
+//         levelName: `Level ${i + 1}`,
+//         SPI: Math.floor(Math.random() * 100),      // Random SPI value between 0 and 100
+//         bestSPI: Math.floor(Math.random() * 100),  // Random bestSPI value between 0 and 100
+//         isComp: Math.random() > 0.5                // Randomly true or false
+//     }));
+// };
 
 export const CompLevel = () => {
     const [levels, setLevels] = useState<Levels[]>([]);
@@ -48,26 +48,31 @@ export const CompLevel = () => {
     const firstIncompleteLevelIndex = levels.findIndex(level => !level.isComp);
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            <h2 className="text-2xl font-bold text-center mb-6">CompLevel</h2>
-            <div className="space-y-4">
-                {levels.map((level, index) => (
-                    <div key={index} className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
-                        <p className="text-lg font-semibold text-gray-800">
-                            Level Name: {level.levelName}{" "}
-                            {index === firstIncompleteLevelIndex && !level.isComp && (
-                                <span className="text-blue-600 font-bold">(Current Level)</span>
-                            )}
-                        </p>
-                        <p className="text-gray-700">SPI: {level.SPI}</p>
-                        <p className="text-gray-700">Best SPI: {level.bestSPI}</p>
-                        <p className="text-gray-700">
-                            Is Completed: <span className={level.isComp ? "text-green-600 font-bold" : "text-red-600"}>{level.isComp ? "Yes" : "No"}</span>
-                        </p>
-                        {level.isComp && <p className="text-green-600 font-bold">Completed</p>}
-                    </div>
-                ))}
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 p-6">
+        <h2 className="text-3xl font-bold text-yellow-400 text-center mb-8">Completed Levels</h2>
+        <div className="space-y-6 max-w-3xl mx-auto">
+            {levels.map((level, index) => (
+                <div 
+                    key={index} 
+                    className="p-6 bg-gray-800 bg-opacity-90 rounded-lg shadow-lg border border-gray-700 transform hover:scale-105 transition-transform duration-200"
+                >
+                    <p className="text-xl font-semibold text-yellow-400 mb-2">
+                        {level.levelName} 
+                        {index === firstIncompleteLevelIndex && !level.isComp && (
+                            <span className="ml-2 text-blue-500 font-bold">(Current Level)</span>
+                        )}
+                    </p>
+                    <p className="text-gray-300">SPI: <span className="font-bold">{level.SPI}</span></p>
+                    <p className="text-gray-300">Best SPI: <span className="font-bold">{level.bestSPI}</span></p>
+                    <p className="text-gray-300">
+                        Status:{" "}
+                        <span className={level.isComp ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
+                            {level.isComp ? "Completed" : "Not Completed"}
+                        </span>
+                    </p>
+                </div>
+            ))}
         </div>
+    </div>
     );
 };

@@ -38,12 +38,12 @@ export default class Level2 extends Phaser.Scene {
         //   socket.emit('level-start', { level: 'Level1' });
           console.log('Socket connection in Level2:', socket.id);
         } else {
-          console.warn('Socket not available in Level1');
+          console.warn('Socket not available in Level2');
         }
       }
 
     create() {
-        
+       
         this.createQuestionPanel(`Level2`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
@@ -166,9 +166,13 @@ export default class Level2 extends Phaser.Scene {
         this.startTime = this.time.now - this.elapsedTime * 1000; // Restore previous time if reloaded
 
         // Define penalties (initialize to 0)
-        this.penalties = 0;
-
-        // Flag to track if the player is in the completion zone
+        const previousPenaliites=JSON.parse(localStorage.getItem("playerProgress") || '{}');
+        if(previousPenaliites  && previousPenaliites.Level=="Level2")
+        this.penalities = ( previousPenaliites.penalities ? previousPenaliites.penalities : 0 );  // add the value if got from backend it will be stored in the localstorage
+       
+       else{
+        this.penalities=0
+       } // Flag to track if the player is in the completion zone
         this.inCompletionZone = false;
 
         const completionZones = map.getObjectLayer('Script').objects.filter(obj => 
@@ -198,22 +202,17 @@ export default class Level2 extends Phaser.Scene {
 
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
 
-this.input.keyboard.on('keydown-ESC', () => {
-    this.saveProgress();
-    this.scene.pause(); // NOT RESUMING AFTER PRESSING ESC AGAIN
-});
+        this.input.keyboard.on('keydown-ESC', () => {
+            this.saveProgress();
+            this.scene.pause(); // NOT RESUMING AFTER PRESSING ESC AGAIN
+        });
 
-// Outside the Phaser scene or at the top level (e.g., in main game script)
-window.addEventListener('beforeunload', (event) => {
-    this.saveProgress();
-    event.preventDefault();
-    event.returnValue = ''; // Trigger confirmation dialog
-});
-
-        
-        
-        
-        
+        // Outside the Phaser scene or at the top level (e.g., in main game script)
+        window.addEventListener('beforeunload', (event) => {
+            this.saveProgress();
+            event.preventDefault();
+            event.returnValue = ''; // Trigger confirmation dialog
+        });
 
         // Create a red dot to represent the character on the minimap
         this.redDot = this.add.circle(0, 0, 20, 0xff0000);
@@ -227,6 +226,15 @@ window.addEventListener('beforeunload', (event) => {
 
         miniMapCamera.ignore(this.panel);
         miniMapCamera.ignore(this.questionTextPanel);
+
+        this.time.addEvent({
+            delay: 1000, // 1000 ms = 1 second
+            callback: () => {
+                this.saveProgress();
+
+            },
+            loop: true,
+          });
 
     }
 
@@ -328,7 +336,7 @@ window.addEventListener('beforeunload', (event) => {
     // Check Enter key and if in completion zone
     if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
         console.log("Enter key pressed!");
-        if (!this.inCompletionZone) {
+        if (this.inCompletionZone) {
             const data =  this.onLevelComplete();
             const {time , penalty , CPI } =data;
             console.log("data: ",data);
@@ -341,22 +349,28 @@ window.addEventListener('beforeunload', (event) => {
     
                     },{
                         headers: {Authorization : localStorage.getItem("token")}
-                    } )
-                    const nextLevel=res.data;
+                    })
+                    const {nextLevel, onGoingTime , penalities}=res.data;
                     console.log(nextLevel);
                     if(nextLevel==null){
-                        //game is comp 
+                        const navigate = this.game.registry.get('navigate');
+                        navigate('/leaderboard');
                     }
                     else{
 
-                       const localStoragedata= localStorage.getItem("playerProgress")
-                      this.clearProgress();
-                       let playerProgress = JSON.parse(localStoragedata);
-                      console.log("data coming to local storage : " ,playerProgress);
-                       playerProgress.Level=nextLevel;
-                       localStorage.setItem("playerProgress", JSON.stringify(playerProgress));
-                    console.log("data going to local storage : " ,playerProgress);
-                    this.scene.start(nextLevel);
+                        const localStoragedata= localStorage.getItem("playerProgress")
+                        let playerProgress = JSON.parse(localStoragedata);
+                        console.log("data coming to local storage : " ,playerProgress);
+                        playerProgress.Level=nextLevel;
+                        playerProgress.x=800
+                        playerProgress.y=1550
+                        playerProgress.elapsedTime=0+onGoingTime;  // find a way to extract the values from backend they might not be zero
+                        playerProgress.penalities=0 + penalities ;  // find a way to get the real values they might node be zero 
+                        localStorage.setItem("playerProgress", JSON.stringify(playerProgress));
+                        console.log("data going to local storage : " ,playerProgress);
+                        const navigate = this.game.registry.get('navigate');
+                        // navigate('/leaderboard');
+                        this.scene.start(nextLevel);
 
                     }
                 } catch (error) {
@@ -366,12 +380,9 @@ window.addEventListener('beforeunload', (event) => {
                 }
 
                 fun();
-            // const socket = this.game.registry.get('socket');
-            // socket.emit("level-comp",data);
             console.log("In completion zone, calling onLevelComplete.");
-            // this.onLevelComplete();
         } else {
-            this.penalties++;
+            this.penalities++;
             console.log("Not in completion zone.");
         }
     }
@@ -379,17 +390,12 @@ window.addEventListener('beforeunload', (event) => {
     
 
     onLevelComplete() {
-        console.log("CURRENT : ",this.time.now );
-        console.log("START TIME : ", this.startTime)
         this.elapsedTime = (this.time.now - this.startTime) / 1000;
-        console.log("TIME : ",this.elapsedTime);
-        console.log(this.penalties);
-        const cpi = this.calculateCPI(this.elapsedTime, this.penalties);
-        console.log(`Level completed! CPI: ${cpi.toFixed(2)}`);
-        return { time : this.elapsedTime, penalty : this.penalties,CPI: cpi.toFixed(2) }
-    }
+        const cpi = this.calculateCPI(this.elapsedTime, this.penalities);
+        return { time : this.elapsedTime, penalty : this.penalities,CPI: cpi.toFixed(2) }
+     }
 
-    calculateCPI(timeTaken, penalties) {
+    calculateCPI(timeTaken, penalities) {
         const maxCPI = 10;
         const targetTime = 100; // Target time in seconds (e.g., 5 minutes)
         const timePenaltyRate = 0.02; // Rate at which CPI decreases per second beyond target time
@@ -402,7 +408,7 @@ window.addEventListener('beforeunload', (event) => {
         }
     
         // Penalty-based deduction
-        const penaltyPoints = penalties * penaltyDeduction;
+        const penaltyPoints = penalities * penaltyDeduction;
     
         // Calculate final CPI
         let cpi = maxCPI - timePenalty - penaltyPoints;
@@ -415,11 +421,13 @@ window.addEventListener('beforeunload', (event) => {
     }
 
     saveProgress = () => {
+        
+        this.elapsedTime = (this.time.now - this.startTime) / 1000;
         const progress = {
             x: this.character.x,
             y: this.character.y,
             elapsedTime: this.elapsedTime,
-            penalties: this.penalties,
+            penalities:this.penalities,
             Level:"Level2"
 
         };
@@ -430,7 +438,7 @@ window.addEventListener('beforeunload', (event) => {
 
         loadProgress() {
         const savedProgress = localStorage.getItem('playerProgress');
-        
+        console.log(savedProgress);
         if (savedProgress) {
             try {
                 const progress = JSON.parse(savedProgress);
@@ -446,19 +454,19 @@ window.addEventListener('beforeunload', (event) => {
                 this.elapsedTime = typeof progress.elapsedTime === 'number' ? progress.elapsedTime : 0;
     
                 // Load penalties if it exists, default to 0 if not
-                this.penalties = typeof progress.penalties === 'number' ? progress.penalties : 0;
+                this.penalities = typeof progress.penalities === 'number' ? progress.penalities : 0;
     
                 console.log("Progress loaded:", progress);
             } catch (error) {
                 console.error("Failed to load saved progress:", error);
                 this.elapsedTime = 0;
-                this.penalties = 0;
+                this.penalities = 0;
             }
         } else {
-            // If no saved progress, start with defaults
+             // If no saved progress, start with defaults
             this.elapsedTime = 0;
-            this.penalties = 0;
-        }
+            this.penalities = 0;
+        } 
     }
     
 

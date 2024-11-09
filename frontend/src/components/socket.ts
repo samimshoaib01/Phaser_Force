@@ -4,7 +4,7 @@ interface PlayerProgress {
   x: number;
   y: number;
   elapsedTime: number;
-  penalties: number;
+  penalities: number;
   Level: string;
   userId: number; 
 }

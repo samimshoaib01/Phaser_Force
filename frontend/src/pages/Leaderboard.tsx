@@ -9,6 +9,15 @@ interface Winner {
 export const Leaderboard = () => {
   const [winners, setWinners] = useState<Winner[]>([]);
 
+  // Function to generate random winners for testing
+  // const generateRandomWinners = () => {
+  //   const randomWinners: Winner[] = Array.from({ length: 6 }, (_, i) => ({
+  //     name: `Player ${i + 1}`,
+  //     CPI: Math.floor(Math.random() * 100) + 1,
+  //   }));
+  //   setWinners(randomWinners);
+  // };
+
   useEffect(() => {
     const fetchWinners = async () => {
       try {
@@ -18,29 +27,33 @@ export const Leaderboard = () => {
         console.error("Failed to fetch winners:", e);
       }
     };
+        // generateRandomWinners(); // Use random data for testing in case of an error
 
-    fetchWinners();
+    // fetchWinners();
   }, []);
 
   return (
-    <div className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
-      {winners.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {winners.map((winner, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full text-center transform hover:scale-105 transition-transform duration-200 ease-in-out"
-            >
-              <h2 className="text-xl font-semibold text-gray-800">{winner.name}</h2>
-              <p className="text-gray-600">CPI: {winner.CPI}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-700 font-medium text-lg mt-8">
-          No winners yet! Play to be the first.
-        </p>
-      )}
-    </div>
+    <div className="flex flex-col items-center p-6 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 min-h-screen">
+    <h1 className="text-4xl font-bold text-yellow-400 mb-12">Leaderboard</h1>
+    {winners.length > 0 ? (
+      <div className="space-y-4 w-full max-w-4xl">
+        {winners.map((winner, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center bg-gray-800 bg-opacity-90 rounded-lg shadow-lg p-8 w-full text-left transform hover:scale-105 transition-transform duration-200"
+          >
+            <h2 className="text-2xl font-semibold text-yellow-300">{winner.name}</h2>
+            <p className="text-xl text-gray-300">
+              CPI: <span className="font-bold">{winner.CPI}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-gray-300 font-medium text-lg mt-8">
+        No winners yet! Play to be the first.
+      </p>
+    )}
+  </div>
   );
 };
