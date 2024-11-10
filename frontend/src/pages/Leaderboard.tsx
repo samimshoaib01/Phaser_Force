@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Winner {
   name: string;
@@ -54,6 +55,14 @@ export const Leaderboard = () => {
         No winners yet! Play to be the first.
       </p>
     )}
+
+
+<Link 
+  to={'/'}
+  className="mt-4 inline-block py-2 px-6 bg-gray-800 text-yellow-400 font-semibold text-xl rounded-lg shadow-lg hover:bg-gray-700 transition-all duration-300"
+>
+  Go to Home
+</Link>
   </div>
   );
 };

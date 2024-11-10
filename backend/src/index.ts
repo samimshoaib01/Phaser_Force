@@ -48,6 +48,15 @@ interface PlayerProgress {
 
 let res:PlayerProgress;
 
+enum LevelName {
+    Level1 = "Level1",
+    Level2 = "Level2",
+    Level3 = "Level3",
+    Level4 = "Level4",
+    Level5 = "Level5",
+  }
+
+
 io.on('connection',(socket)=>{
 
     console.log("Socket connected with userId: ",socket.id);
@@ -84,7 +93,7 @@ io.on('connection',(socket)=>{
                     where:{
                         userId_levelName:{
                             userId:userId ,
-                            levelName:Level
+                            levelName:Level as LevelName
                         }
                     },update:{
                         x,
@@ -94,7 +103,7 @@ io.on('connection',(socket)=>{
                     },
                     create:{
 
-                        levelName: Level,
+                        levelName: Level as LevelName ,
                         x,
                         y,
                         onGoingTime:elapsedTime,
@@ -395,7 +404,7 @@ app.post("/auth/local", async (req, res) => {
             })
             // do not change the CPI when the game will get comp take the avg of all the bestSPI and 
             // put CPI =  max(CPI ,  Avg of bestSPI )
-            console.log(user);
+            console.log("user: ",user);
             res.send(user);
             
             return ;
@@ -443,6 +452,7 @@ app.get("/leaderboard",async(req,res)=>{
                 , select:{
                     CPI:true,
                     name:true,
+                    id:true,
                 },
                 orderBy:[{ CPI:'desc'}, // to get the highest cpi at the top
                     {createdAt:'asc'}
@@ -458,14 +468,6 @@ app.get("/leaderboard",async(req,res)=>{
              return ;
     }
 });
-
-enum LevelName {
-    Level1 = "Level1",
-    Level2 = "Level2",
-    Level3 = "Level3",
-    Level4 = "Level4",
-    Level5 = "Level5",
-  }
 
 app.get("/level-leaderboard/:levelName",checkUser,async(req:CustomRequest,res)=>{
     try {
@@ -567,7 +569,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
             where: {
                 userId,
                 levelName: {
-                    in:[nextLevel,Level]
+                    in:[nextLevel as LevelName ,Level as LevelName ]
                 },
             }
         });
@@ -576,7 +578,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
          existingLevel = await prisma.level.findMany({
             where: {
                 userId,
-                levelName: Level
+                levelName: Level as LevelName
                 ,
             }
         });
@@ -609,7 +611,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     where:{
                         userId_levelName: {
                             userId,
-                           levelName: Level, // Assuming Level is passed in as a string that matches LevelName enum
+                           levelName: Level as LevelName ,
                          },
                     },
                     data:{
@@ -643,7 +645,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                         where:{
                             userId_levelName: {
                                 userId,
-                               levelName: Level,
+                               levelName: Level as LevelName ,
                              },
                         },
                         data:{
@@ -674,7 +676,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
           res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
           return;
     } 
-    else  if(sortedLevels[0].isComp){
+    else  if(sortedLevels[0].isComp && !nextLevel ){
         // player has already comp this level once so assign the bestSPI as the 
         if(SPI<=sortedLevels[0].bestSPI){
             // dont do anything
@@ -683,12 +685,13 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     id:userId
                 },
                 data:{
+                 isCompleted:true,
                     levels:{
                         update:{
                             where:{
                                 userId_levelName: {
                                     userId,
-                                    levelName: Level,
+                                    levelName: Level as LevelName ,
                                 }
                             },
                             data:{
@@ -698,6 +701,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                     }
                 },
             })
+            console.log("last: ",user);
             res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
             // send the level info of the user which he has completed
             return ;
@@ -723,7 +727,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                             where:{
                                 userId_levelName: {
                                     userId,
-                                    levelName: Level,
+                                    levelName: Level ,
                                 }
                             },
                             data:{
@@ -761,7 +765,111 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                             where:{
                                 userId_levelName: {
                                     userId,
+                                    levelName: Level as LevelName ,
+                                }
+                            },
+                            data:{
+                                bestSPI:SPI
+                            }
+                        }
+                    }
+                }
+            })
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
+            return ;
+        }
+       
+    }
+    else  if(sortedLevels[0].isComp ){
+        // player has already comp this level once so assign the bestSPI as the 
+        if(SPI<=sortedLevels[0].bestSPI){
+            // dont do anything
+            const user=  await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                 isCompleted:true,
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
                                     levelName: Level,
+                                }
+                            },
+                            data:{
+                              isComp:true
+                            }
+                        }
+                    }
+                },
+            })
+            console.log("last: ",user);
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
+            // send the level info of the user which he has completed
+            return ;
+           
+        }
+       else if(SPI >= 7.5 && sortedLevels[0].bestSPI<7.5 ){
+            // bestspi =7.5
+            enum LevelName {
+                Level1 = "Level 1",
+                Level2 = "Level 2",
+                Level3 = "Level 3",
+                Level4 = "Level 4",
+                Level5 = "Level 5",
+              }
+
+          const user=  await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
+                                    levelName: Level  ,
+                                }
+                            },
+                            data:{
+                                SPI:SPI,
+                                bestSPI:7.5,
+                              isComp:true
+                            }
+                        }
+                    }
+                },
+                include:{
+                    levels:{
+                        where:{
+                            userId:userId,
+                        },select:{
+                            levelName:true,
+                            onGoingTime:true,
+                            penalities:true
+                        }
+                    }
+                }
+            })
+            res.send({nextLevel,onGoingTime:sortedLevels[1]? sortedLevels[1].onGoingTime:0 ,penalities:sortedLevels[1]? sortedLevels[1].penalities:0});
+            return ;
+        }
+        else if(SPI>sortedLevels[0].bestSPI && sortedLevels[0].bestSPI<7.5 ){
+            //bestspi= spi
+           const user= await prisma.user.update({
+                where:{
+                    id:userId
+                },
+                data:{
+                    levels:{
+                        update:{
+                            where:{
+                                userId_levelName: {
+                                    userId,
+                                    levelName: Level as LevelName,
                                 }
                             },
                             data:{
@@ -792,7 +900,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
               Level:nextLevel,
               levels:{
                   create:{
-                        levelName: Level,
+                        levelName: Level as LevelName,
                           SPI:Number(SPI),
                           bestSPI:Number(SPI),
                           isComp:true
@@ -821,7 +929,7 @@ app.post("/level-complete",checkUser,async(req:CustomRequest,res)=>{
                 isCompleted:true,
                 levels:{
                     create:{
-                        levelName: Level,
+                        levelName: Level as LevelName,
                         SPI:Number(SPI),
                         bestSPI:Number(SPI),
                         isComp:true
