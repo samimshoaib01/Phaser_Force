@@ -133,7 +133,11 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
         } else if(!data) {
             // console.log("HHH");
             // Default spawn position when loading for the first time
-            this.character== this.physics.add.sprite(800, 1550, 'character').setScale(0.3);;
+            console.log("h");
+            console.log(this.character);
+            this.character= this.physics.add.sprite(800, 1550, 'character').setScale(0.3);
+            console.log(this.character);
+
         }
 
         this.cameras.main.startFollow(this.character);

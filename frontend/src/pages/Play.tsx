@@ -33,6 +33,14 @@ export const Play = () => {
     }
   }, []);
 
+  const explore=()=>{
+    const playerProgress={
+      Level:"Explore"
+    }
+    localStorage.setItem("playerProgress",JSON.stringify(playerProgress));
+    navigate("/game");
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 p-6">
       <div className="flex flex-col items-center space-y-6 p-8 bg-gray-800 bg-opacity-90 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700">
@@ -64,7 +72,8 @@ export const Play = () => {
           className="w-48 py-3 text-center bg-purple-700 text-white font-semibold rounded-md shadow-lg hover:bg-purple-600 transform hover:scale-105 transition-all duration-200"
         >
           Completed Levels
-        </Link>         
+        </Link>  
+        <button onClick={explore}>explore</button>       
       </div>
     </div>
   );
