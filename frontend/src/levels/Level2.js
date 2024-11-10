@@ -31,7 +31,8 @@ export default class Level2 extends Phaser.Scene {
 
     create() {
         
-        this.createQuestionPanel(`L2`);
+        this.createQuestionPanel(`Shuffle the letters ABCDAL to form a place where you might find treasures."
+`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
@@ -188,11 +189,11 @@ export default class Level2 extends Phaser.Scene {
 
 
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
+        this.input.keyboard.on('keydown-ESC', () => {
+            const navigate = this.game.registry.get('navigate');
+            navigate('/');
+        });
 
-this.input.keyboard.on('keydown-ESC', () => {
-    this.saveProgress();
-    this.scene.pause();
-});
 
 // Outside the Phaser scene or at the top level (e.g., in main game script)
 window.addEventListener('beforeunload', (event) => {

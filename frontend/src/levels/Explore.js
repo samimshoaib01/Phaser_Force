@@ -119,18 +119,21 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
         groundLayer.setCollisionByProperty({ collision: true });
 
         const data = this.scene.settings.data;
+        console.log(this.scene);
+        console.log(this.scene.settings);
         console.log(data); // To verify if data is correctly passed and accessible
 
 
 
         // Character setup
-        if (data.fromTransition) {
+        if (data?.fromTransition) {
             // Find spawn_point1 in object layer and use it for character position
             const spawnPoint = map.findObject('Transitions', obj => obj.name === 'spawn_point1');
             this.character = this.physics.add.sprite(spawnPoint.x, spawnPoint.y, 'character').setScale(0.3);
-        } else {
+        } else if(!data) {
+            // console.log("HHH");
             // Default spawn position when loading for the first time
-            this.character = this.physics.add.sprite(800, 1550, 'character').setScale(0.3);
+            this.character== this.physics.add.sprite(800, 1550, 'character').setScale(0.3);;
         }
 
         this.cameras.main.startFollow(this.character);
@@ -219,10 +222,10 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
                 this.cameras.main.roundPixels = true;  // Helps with pixel-perfect rendering
 
                 
-
-                
-        
-
+                this.input.keyboard.on('keydown-ESC', () => {
+                    const navigate = this.game.registry.get('navigate');
+                    navigate('/');
+                });
     }
 
     

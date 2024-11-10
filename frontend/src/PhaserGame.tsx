@@ -40,6 +40,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({ socket } : {socket : Soc
       };
 
       gameRef.current = new Phaser.Game(config);
+      
       gameRef.current.registry.set("navigate",navigate);
       // Store the socket in the game registry
       if (socket) {

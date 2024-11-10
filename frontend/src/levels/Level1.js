@@ -1,8 +1,8 @@
 import axios from "axios"
+
         export default class Level1 extends Phaser.Scene {
             constructor() {
-                super({ key: 'Level1' });
-            }
+                super({ key: 'Level1' });            }
         
             preload() {
                 // Load the tilemap and tileset images
@@ -191,11 +191,14 @@ import axios from "axios"
         
         
                 // Inside your Phaser scene class (e.g., in create() or as a separate method)
-        
-            this.input.keyboard.on('keydown-ESC', () => {
-                this.saveProgress();
-                this.scene.pause(); // NOT RESUMING AFTER PRESSING ESC AGAIN
-            });
+
+                // This listener toggles pause directly within the scene if it's active
+                this.input.keyboard.on('keydown-ESC', () => {
+
+                    const navigate = this.game.registry.get('navigate');
+                    navigate('/');  
+              });
+
         
             // Outside the Phaser scene or at the top level (e.g., in main game script)
             window.addEventListener('beforeunload', (event) => {
@@ -226,7 +229,7 @@ import axios from "axios"
                     loop: true,
                   });
         
-            }
+            }            
         
             createQuestionPanel(questionText) {
                 // Get the center of the screen
@@ -343,6 +346,7 @@ import axios from "axios"
                             })
                             const {nextLevel, onGoingTime , penalities}=res.data;
                             console.log("Next Level: ",nextLevel);
+
                             if(nextLevel==null){
                                 //game is comp 
                             const navigate = this.game.registry.get('navigate');

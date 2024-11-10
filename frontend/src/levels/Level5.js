@@ -31,7 +31,7 @@ export default class Level5 extends Phaser.Scene {
 
     create() {
         
-        this.createQuestionPanel(`L5`);
+        this.createQuestionPanel(`Occupies a significanr part in college but not related to college`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
@@ -188,18 +188,17 @@ export default class Level5 extends Phaser.Scene {
 
 
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
-
-this.input.keyboard.on('keydown-ESC', () => {
-    this.saveProgress();
-    this.scene.pause();
-});
-
-// Outside the Phaser scene or at the top level (e.g., in main game script)
-window.addEventListener('beforeunload', (event) => {
-    this.saveProgress();
-    event.preventDefault();
-    event.returnValue = ''; // Trigger confirmation dialog
-});
+        this.input.keyboard.on('keydown-ESC', () => {
+            const navigate = this.game.registry.get('navigate');
+            navigate('/');
+        });
+            
+    // Outside the Phaser scene or at the top level (e.g., in main game script)
+    window.addEventListener('beforeunload', (event) => {
+        this.saveProgress();
+        event.preventDefault();
+        event.returnValue = ''; // Trigger confirmation dialog
+    });
 
         // Create a red dot to represent the character on the minimap
         this.redDot = this.add.circle(0, 0, 50, 0xff0000);

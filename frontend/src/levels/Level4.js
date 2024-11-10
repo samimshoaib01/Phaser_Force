@@ -31,7 +31,7 @@ export default class Level4 extends Phaser.Scene {
 
     create() {
         
-        this.createQuestionPanel(`L4`);
+        this.createQuestionPanel(` Is the abbreviation of a state in India.`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
@@ -188,11 +188,10 @@ export default class Level4 extends Phaser.Scene {
 
 
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
-
-this.input.keyboard.on('keydown-ESC', () => {
-    this.saveProgress();
-    this.scene.pause();
-});
+        this.input.keyboard.on('keydown-ESC', () => {
+            const navigate = this.game.registry.get('navigate');
+            navigate('/');
+        });
 
 // Outside the Phaser scene or at the top level (e.g., in main game script)
 window.addEventListener('beforeunload', (event) => {

@@ -64,7 +64,7 @@ export const Play = () => {
           className="w-48 py-3 text-center bg-purple-700 text-white font-semibold rounded-md shadow-lg hover:bg-purple-600 transform hover:scale-105 transition-all duration-200"
         >
           Completed Levels
-        </Link>
+        </Link>         
       </div>
     </div>
   );
