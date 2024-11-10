@@ -73,7 +73,9 @@ export const Play = () => {
         >
           Completed Levels
         </Link>  
-        <button onClick={explore}>explore</button>       
+        <button onClick={explore} 
+          className="w-48 py-3 text-center bg-yellow-600 text-white font-semibold rounded-md shadow-lg hover:bg-yellow-500 transform hover:scale-105 transition-all duration-200"
+          >Explore Map</button>       
       </div>
     </div>
   );
