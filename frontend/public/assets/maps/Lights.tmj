@@ -1,0 +1,39 @@
+{ "columns":0,
+ "grid":
+    {
+     "height":1,
+     "orientation":"orthogonal",
+     "width":1
+    },
+ "margin":0,
+ "name":"Lights",
+ "spacing":0,
+ "tilecount":2,
+ "tiledversion":"1.11.0",
+ "tileheight":2,
+ "tiles":[
+        {
+         "id":0,
+         "image": "assets/tilesets/maroon.jpg",
+         "imageheight":2,
+         "imagewidth":4
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":500,
+                 "tileid":1
+                }, 
+                {
+                 "duration":500,
+                 "tileid":0
+                }],
+         "id":1,
+         "image": "assets/tilesets/red.png",
+         "imageheight":2,
+         "imagewidth":4
+        }],
+ "tilewidth":4,
+ "type":"tileset",
+ "version":"1.10"
+}
