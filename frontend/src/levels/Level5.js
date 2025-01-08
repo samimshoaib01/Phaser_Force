@@ -31,7 +31,9 @@ export default class Level5 extends Phaser.Scene {
 
     create() {
         
-        this.createQuestionPanel(`Occupies a significanr part in college but not related to college`);
+        this.createQuestionPanel(`
+            Occupies a significanr part in
+            college but not related to college`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
@@ -190,7 +192,9 @@ export default class Level5 extends Phaser.Scene {
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
         this.input.keyboard.on('keydown-ESC', () => {
             const navigate = this.game.registry.get('navigate');
-            navigate('/');
+            const token=localStorage.getItem("token");
+            const userName=""
+            navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
         });
             
     // Outside the Phaser scene or at the top level (e.g., in main game script)

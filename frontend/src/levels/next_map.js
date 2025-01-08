@@ -97,9 +97,12 @@ export default class NextMap extends Phaser.Scene {
         this.cameras.main.roundPixels = true;  // Helps with pixel-perfect rendering
 
         this.input.keyboard.on('keydown-ESC', () => {
+
             const navigate = this.game.registry.get('navigate');
-            navigate('/');
-        });
+            const token=localStorage.getItem("token");
+            const userName=""
+            navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
+     });
 
     }
 

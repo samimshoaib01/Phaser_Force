@@ -32,7 +32,8 @@ export default class Level3 extends Phaser.Scene {
     create() {
         
         this.createQuestionPanel(`
-A famous character from the cartoon Oggy and the Cockroaches known for his constant battle .`);
+A famous character from the cartoon Oggy
+ and the Cockroaches known for his constant battle .`);
         this.setupInput();
         this.showQuestionAtStart(10000); // Show question for 5 seconds
 
@@ -191,9 +192,12 @@ A famous character from the cartoon Oggy and the Cockroaches known for his const
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
 
         this.input.keyboard.on('keydown-ESC', () => {
+
             const navigate = this.game.registry.get('navigate');
-            navigate('/');
-        });
+            const token=localStorage.getItem("token");
+            const userName=""
+            navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
+     });
 
 // Outside the Phaser scene or at the top level (e.g., in main game script)
 window.addEventListener('beforeunload', (event) => {

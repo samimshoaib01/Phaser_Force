@@ -190,7 +190,9 @@ export default class Level4 extends Phaser.Scene {
         // Inside your Phaser scene class (e.g., in create() or as a separate method)
         this.input.keyboard.on('keydown-ESC', () => {
             const navigate = this.game.registry.get('navigate');
-            navigate('/');
+            const token=localStorage.getItem("token");
+            const userName=""
+            navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
         });
 
 // Outside the Phaser scene or at the top level (e.g., in main game script)

@@ -133,7 +133,6 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
         } else if(!data) {
             // console.log("HHH");
             // Default spawn position when loading for the first time
-            console.log("h");
             console.log(this.character);
             this.character= this.physics.add.sprite(800, 1550, 'character').setScale(0.3);
             console.log(this.character);
@@ -199,7 +198,7 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
 
 
         // Initialize the text box with pages and a callback
-        this.textBox = new TextBox(this, 800,1400, 500, 75, [
+        this.textBox = new TextBox(this, 800,1500, 300, 75, [
             "Motilal Nehru National Institute of Technology Allahabad (MNNIT), established in 1961 as a Regional Engineering College, became a National Institute of Technology (NIT) in 2002 and was granted the status of an institution of national importance in 2007.",
             " Initially offering Bachelor's programs in Civil, Electrical, and Mechanical Engineering, it later introduced several other disciplines, including Computer Science, Electronics, and Management. The Institute now offers nine B.Tech., 19 M.Tech., MBA, MCA, M.Sc., and Ph.D. programs",
             " It has a strong focus on research and faculty development, with many faculty members holding Ph.D. degrees. MNNIT has also been involved in various government-funded projects, including TEQIP and the Indo-UK REC Project."
@@ -213,7 +212,7 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
 
 
                 // Create car sprite and enable physics
-                this.car = this.physics.add.sprite(800, 1500, 'car').setScale(0.05);
+                this.car = this.physics.add.sprite(800, 1570, 'car').setScale(0.05);
                 this.car.setImmovable(true);
 
                 this.physics.add.collider(this.car, groundLayer);
@@ -228,7 +227,9 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
                 
                 this.input.keyboard.on('keydown-ESC', () => {
                     const navigate = this.game.registry.get('navigate');
-                    navigate('/');
+                    const token=localStorage.getItem("token");
+                    const userName=""
+                    navigate(`/play?verified=${encodeURIComponent(token)}&userName=${encodeURIComponent(userName)}`);
                 });
     }
 
@@ -271,9 +272,9 @@ this.infoText = this.add.text(0, 0, '', { fontSize: '1 px', color: '#ffffff' ,re
     }
 
     // Car and character controls
-    const carspeed = 80;
+    const carspeed = 120;
     const acceleratedSpeed = carspeed * 1.5;  // Define the accelerated speed when Shift is pressed
-    const charspeed = 350;
+    const charspeed = 50;
 
     // Check proximity to the car
     const distance = Phaser.Math.Distance.Between(this.character.x, this.character.y, this.car.x, this.car.y);
