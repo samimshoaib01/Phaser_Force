@@ -20,6 +20,13 @@ The core of *Phaser Force* is a scavenger hunt. Players are given hints that lea
 
 ---
 
+## 🗺️ Tiled Map Screenshot
+
+*(<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/97f00bd2-97aa-41ee-9644-fd5f9e351a19" />
+)*
+
+---
+
 ## 🎯 Problem Solved
 
 *Phaser Force* addresses the following:
